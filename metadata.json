@@ -1,0 +1,6 @@
+{
+  "name": "Zakirullah Creative Studio - ZK Master Control Center",
+  "description": "Futuristic 3D animated portfolio and full-featured master admin control center for Zakirullah Creative Studio.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
