@@ -13,6 +13,7 @@ interface AuthContextType {
   login: (email: string, pass: string, remember: boolean) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   changePassword: (oldPass: string, newPass: string) => Promise<{ success: boolean; message: string }>;
+  changeEmail: (currentPass: string, newEmail: string) => Promise<{ success: boolean; message: string }>;
   updateProfile: (profile: Partial<AdminUser>) => Promise<boolean>;
 }
 
@@ -133,6 +134,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const changeEmail = async (currentPassword: string, newEmail: string) => {
+    if (!token) return { success: false, message: 'Not authenticated' };
+    try {
+      const res = await fetch('/api/admin/change-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ currentPassword, newEmail })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (user) {
+          const updatedUser = { ...user, email: data.email };
+          setUser(updatedUser);
+          localStorage.setItem('zk_admin_user', JSON.stringify(updatedUser));
+        }
+        return { success: true, message: data.message };
+      }
+      return { success: false, message: data.message || 'Failed to update login email' };
+    } catch (e: any) {
+      return { success: false, message: e.message || 'Network error' };
+    }
+  };
+
   const updateProfile = async (profileData: Partial<AdminUser>) => {
     if (!token) return false;
     try {
@@ -170,6 +197,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         logout,
         changePassword,
+        changeEmail,
         updateProfile
       }}
     >

@@ -72,7 +72,7 @@ export const BottomSections: React.FC<BottomSectionsProps> = ({
           {/* Column 1: Why Choose Me? (4 cols) */}
           <TiltCard
             maxTilt={4}
-            className={`lg:col-span-4 p-6 sm:p-7 rounded-[32px] border shadow-xl backdrop-blur-xl flex flex-col justify-between ${
+            className={`lg:col-span-4 p-5 sm:p-7 rounded-[28px] sm:rounded-[32px] border shadow-xl backdrop-blur-xl flex flex-col justify-between ${
               isDark
                 ? 'bg-gradient-to-b from-[#0e1633]/90 via-[#0a0f26]/95 to-[#050818] border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.15)]'
                 : 'bg-white/95 border-slate-200 shadow-lg'
@@ -86,7 +86,7 @@ export const BottomSections: React.FC<BottomSectionsProps> = ({
                 Why Choose Me?
               </h3>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div className={`flex items-start gap-3 p-3 rounded-2xl border ${
                   isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-200'
                 }`}>
@@ -145,7 +145,7 @@ export const BottomSections: React.FC<BottomSectionsProps> = ({
           {/* Column 2: Client Testimonials (4 cols) */}
           <TiltCard
             maxTilt={4}
-            className={`lg:col-span-4 p-6 sm:p-7 rounded-[32px] border shadow-xl backdrop-blur-xl flex flex-col justify-between ${
+            className={`lg:col-span-4 p-5 sm:p-7 rounded-[28px] sm:rounded-[32px] border shadow-xl backdrop-blur-xl flex flex-col justify-between ${
               isDark
                 ? 'bg-gradient-to-b from-[#0e1633]/90 via-[#0a0f26]/95 to-[#050818] border-purple-500/20 shadow-[0_0_30px_rgba(168,85,247,0.15)]'
                 : 'bg-white/95 border-slate-200 shadow-lg'
@@ -163,7 +163,7 @@ export const BottomSections: React.FC<BottomSectionsProps> = ({
               </div>
 
               {testimonials.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {testimonials.slice(0, 2).map((test) => (
                     <div
                       key={test.id}
@@ -178,20 +178,20 @@ export const BottomSections: React.FC<BottomSectionsProps> = ({
                       </p>
 
                       <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-2.5 min-w-0">
                           <img
                             src={test.avatar}
                             alt={test.name}
-                            className="w-8 h-8 rounded-full object-cover border border-amber-400/40"
+                            className="w-8 h-8 rounded-full object-cover border border-amber-400/40 flex-shrink-0"
                           />
-                          <div>
-                            <div className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{test.name}</div>
-                            <div className="text-[10px] text-slate-400">{test.role}</div>
+                          <div className="min-w-0">
+                            <div className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{test.name}</div>
+                            <div className="text-[10px] text-slate-400 truncate">{test.role}</div>
                           </div>
                         </div>
 
                         {/* Stars */}
-                        <div className="flex text-amber-400 text-xs">
+                        <div className="flex text-amber-400 text-xs flex-shrink-0 ml-2">
                           {Array.from({ length: test.rating }).map((_, i) => (
                             <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                           ))}
@@ -214,7 +214,7 @@ export const BottomSections: React.FC<BottomSectionsProps> = ({
           {/* Column 3: Get In Touch (4 cols) with ADMIN LOGIN button at bottom */}
           <TiltCard
             maxTilt={4}
-            className={`lg:col-span-4 p-6 sm:p-7 rounded-[32px] border shadow-xl backdrop-blur-xl flex flex-col justify-between ${
+            className={`lg:col-span-4 p-5 sm:p-7 rounded-[28px] sm:rounded-[32px] border shadow-xl backdrop-blur-xl flex flex-col justify-between ${
               isDark
                 ? 'bg-gradient-to-b from-[#0e1633]/90 via-[#0a0f26]/95 to-[#050818] border-blue-500/25 shadow-[0_0_30px_rgba(59,130,246,0.2)]'
                 : 'bg-white/95 border-slate-200 shadow-lg'
@@ -234,24 +234,24 @@ export const BottomSections: React.FC<BottomSectionsProps> = ({
               {/* Contact list */}
               <div className="space-y-3 mb-5">
                 <div className={`flex items-center gap-2.5 text-xs ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center flex-shrink-0">
                     <Phone className="w-3.5 h-3.5" />
                   </div>
                   <span className="font-mono">{contact?.whatsappNumber || '03439179353'}</span>
                 </div>
 
                 <div className={`flex items-center gap-2.5 text-xs ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center flex-shrink-0">
                     <Mail className="w-3.5 h-3.5" />
                   </div>
                   <span className="truncate">{contact?.email || 'zakir1kb@gmail.com'}</span>
                 </div>
 
                 <div className={`flex items-center gap-2.5 text-xs ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                  <div className="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center flex-shrink-0">
                     <MapPin className="w-3.5 h-3.5" />
                   </div>
-                  <span>{contact?.location || 'Tangi, Charsadda, Pakistan'}</span>
+                  <span className="truncate">{contact?.location || 'Tangi, Charsadda, Pakistan'}</span>
                 </div>
               </div>
 
@@ -260,7 +260,7 @@ export const BottomSections: React.FC<BottomSectionsProps> = ({
                 href={`https://wa.me/92${cleanNumber.startsWith('0') ? cleanNumber.slice(1) : cleanNumber}?text=Hello%20Zakirullah,%20I%20would%20like%20to%20discuss%20a%20project.`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.35)] transition-all transform active:scale-95 mb-6"
+                className="w-full min-h-[44px] py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.35)] transition-all transform active:scale-95 mb-6 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 fill-white/20" />
                 <span>Chat on WhatsApp</span>
@@ -276,7 +276,7 @@ export const BottomSections: React.FC<BottomSectionsProps> = ({
               {isAuthenticated ? (
                 <button
                   onClick={onNavigateToAdmin}
-                  className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 hover:from-purple-600 hover:via-indigo-600 hover:to-blue-600 text-white font-bold text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(147,51,234,0.4)] border border-purple-400/40 transition-all transform active:scale-95"
+                  className="w-full min-h-[44px] py-3 px-4 rounded-2xl bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 hover:from-purple-600 hover:via-indigo-600 hover:to-blue-600 text-white font-bold text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(147,51,234,0.4)] border border-purple-400/40 transition-all transform active:scale-95 cursor-pointer"
                 >
                   <ShieldCheck className="w-4 h-4 text-amber-300" />
                   <span>OPEN ZK CONTROL CENTER</span>
@@ -285,7 +285,7 @@ export const BottomSections: React.FC<BottomSectionsProps> = ({
               ) : (
                 <button
                   onClick={onOpenAdminModal}
-                  className={`w-full py-3 px-4 rounded-2xl font-bold text-xs tracking-wider uppercase flex items-center justify-center gap-2 border shadow-md transition-all transform active:scale-95 group ${
+                  className={`w-full min-h-[44px] py-3 px-4 rounded-2xl font-bold text-xs tracking-wider uppercase flex items-center justify-center gap-2 border shadow-md transition-all transform active:scale-95 group cursor-pointer ${
                     isDark
                       ? 'bg-gradient-to-r from-[#172042] to-[#121936] hover:from-[#1e2a56] hover:to-[#172248] text-slate-200 hover:text-white border-blue-500/30 hover:border-amber-400/60 shadow-[0_0_20px_rgba(59,130,246,0.2)]'
                       : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-800 hover:border-amber-400 shadow-md'

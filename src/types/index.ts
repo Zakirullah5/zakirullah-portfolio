@@ -106,6 +106,11 @@ export interface HeroSettings {
   secondaryButtonLink: string;
   whatsappNumber: string;
   freelanceStatusText: string;
+  cvPdfUrl?: string;
+  cvFileName?: string;
+  cvFileSize?: string;
+  cvLastUpdated?: string;
+  cvButtonText?: string;
 }
 
 export interface AboutSettings {
@@ -174,6 +179,27 @@ export interface ActivityLog {
   user: string;
 }
 
+export interface ClientInquiry {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  service?: string;
+  message: string;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface AdminNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'inquiry' | 'activity' | 'system' | 'cv';
+  timestamp: string;
+  read: boolean;
+  link?: string;
+}
+
 export interface SiteDatabase {
   admin: AdminUser;
   hero: HeroSettings;
@@ -189,6 +215,8 @@ export interface SiteDatabase {
   testimonials: Testimonial[];
   media: MediaFile[];
   activities: ActivityLog[];
+  inquiries?: ClientInquiry[];
+  notifications?: AdminNotification[];
   lastPublishedAt: string;
   isDraft: boolean;
 }

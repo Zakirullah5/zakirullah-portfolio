@@ -7,6 +7,7 @@ import { AdminSidebar, AdminViewType } from './AdminSidebar.tsx';
 import { DashboardView } from './views/DashboardView.tsx';
 import { WebsiteOverviewView } from './views/WebsiteOverviewView.tsx';
 import { HeroManagerView } from './views/HeroManagerView.tsx';
+import { CVManagerView } from './views/CVManagerView.tsx';
 import { AboutManagerView } from './views/AboutManagerView.tsx';
 import { LogoManagerView } from './views/LogoManagerView.tsx';
 import { PortfolioManagerView } from './views/PortfolioManagerView.tsx';
@@ -93,6 +94,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onNavigateToPortfolio })
         );
       case 'hero':
         return <HeroManagerView />;
+      case 'cv':
+        return <CVManagerView />;
       case 'about':
         return <AboutManagerView />;
       case 'logo':
@@ -167,6 +170,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onNavigateToPortfolio })
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           onNavigateToPortfolio={onNavigateToPortfolio}
           onOpenLivePreview={() => setCurrentView('preview')}
+          onSelectView={setCurrentView}
           currentViewTitle={currentView}
         />
 

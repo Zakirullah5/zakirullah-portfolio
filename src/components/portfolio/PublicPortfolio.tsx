@@ -25,7 +25,7 @@ export const PublicPortfolio: React.FC<PublicPortfolioProps> = ({ onNavigateToAd
   });
 
   return (
-    <div className={`min-h-screen relative flex flex-col transition-colors duration-300 selection:bg-purple-600 selection:text-white ${
+    <div className={`min-h-screen w-full max-w-full overflow-x-hidden relative flex flex-col transition-colors duration-300 selection:bg-purple-600 selection:text-white ${
       isDark ? 'bg-[#050711] text-slate-100' : 'bg-slate-50 text-slate-900'
     }`}>
       {/* Cinematic Startup Loading Animation */}
@@ -46,7 +46,7 @@ export const PublicPortfolio: React.FC<PublicPortfolioProps> = ({ onNavigateToAd
       />
 
       {/* Main Content Sections */}
-      <main className="flex-1 relative z-10">
+      <main className="flex-1 relative z-10 w-full max-w-full overflow-x-hidden">
         <HeroSection />
         <AboutAndSkillsSection />
         <ServicesSection />

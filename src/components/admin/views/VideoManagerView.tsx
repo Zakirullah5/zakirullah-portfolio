@@ -31,7 +31,7 @@ export const VideoManagerView: React.FC = () => {
 
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white text-xs font-bold flex items-center gap-2 shadow-md cursor-pointer"
+          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md cursor-pointer min-h-[42px]"
         >
           <UploadCloud className="w-4 h-4" />
           <span>Upload MP4 Video</span>

@@ -11,8 +11,8 @@ interface AdminLoginModalProps {
 
 export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const { login } = useAuth();
-  const [email, setEmail] = useState('zakir1kb@gmail.com');
-  const [password, setPassword] = useState('khan@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,23 +23,24 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
-    setIsLoading(true);
 
-    const res = await login(email, password, rememberMe);
+    if (!email.trim() || !password) {
+      setErrorMessage('Please enter both your admin email and password.');
+      return;
+    }
+
+    setIsLoading(true);
+    const res = await login(email.trim(), password, rememberMe);
     setIsLoading(false);
 
     if (res.success) {
+      setEmail('');
+      setPassword('');
       if (onSuccess) onSuccess();
       onClose();
     } else {
       setErrorMessage(res.error || 'Authentication failed. Please verify your credentials.');
     }
-  };
-
-  const fillDefaultCredentials = () => {
-    setEmail('zakir1kb@gmail.com');
-    setPassword('khan@123');
-    setErrorMessage(null);
   };
 
   return (
@@ -51,7 +52,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
       />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-md my-auto bg-gradient-to-b from-[#11172f]/90 via-[#0a0f24]/95 to-[#060918]/95 border border-purple-500/30 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(59,130,246,0.25)] backdrop-blur-2xl text-white z-10 overflow-hidden">
+      <div className="relative w-full max-w-md my-auto bg-gradient-to-b from-[#11172f]/95 via-[#0a0f24]/98 to-[#060918]/98 border border-purple-500/30 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(59,130,246,0.25)] backdrop-blur-2xl text-white z-10 overflow-hidden">
         {/* Glow ambient spots */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-600/25 rounded-full blur-3xl pointer-events-none" />
@@ -60,7 +61,8 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all duration-200 border border-white/5"
+          className="absolute top-5 right-5 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all duration-200 border border-white/5 min-h-[38px] min-w-[38px] flex items-center justify-center cursor-pointer"
+          aria-label="Close modal"
         >
           <X className="w-5 h-5" />
         </button>
@@ -78,7 +80,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
             Admin Authentication
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Sign in to access the 3D Master Control Center
+            Restricted Access &bull; Authorized Site Owner Only
           </p>
         </div>
 
@@ -95,7 +97,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
           {/* Email Field */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
-              Admin Email
+              Admin Login ID / Email
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -104,10 +106,11 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
               <input
                 type="email"
                 required
+                autoComplete="username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="zakir1kb@gmail.com"
-                className="w-full pl-10 pr-4 py-3 bg-[#0d1430]/80 border border-blue-500/25 focus:border-blue-400 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+                placeholder="Enter authorized admin email"
+                className="w-full pl-10 pr-4 py-3 bg-[#0d1430]/80 border border-blue-500/25 focus:border-blue-400 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all min-h-[44px]"
               />
             </div>
           </div>
@@ -118,14 +121,9 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
               <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
                 Master Password
               </label>
-              <button
-                type="button"
-                onClick={fillDefaultCredentials}
-                className="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors"
-              >
-                <KeyRound className="w-3 h-3" />
-                Fill Initial Credentials
-              </button>
+              <span className="text-[10px] text-slate-400 font-mono">
+                SHA-512 Encrypted
+              </span>
             </div>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -134,15 +132,16 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full pl-10 pr-11 py-3 bg-[#0d1430]/80 border border-blue-500/25 focus:border-blue-400 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+                placeholder="Enter master password"
+                className="w-full pl-10 pr-11 py-3 bg-[#0d1430]/80 border border-blue-500/25 focus:border-blue-400 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all min-h-[44px]"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
                 title={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -159,16 +158,19 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="w-4 h-4 rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-blue-500/40"
               />
-              <span>Remember login securely</span>
+              <span>Remember login</span>
             </label>
-            <span className="text-slate-500 text-[11px]">Protected by SHA-512</span>
+            <span className="text-emerald-400 text-[11px] font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Brute-Force Protected
+            </span>
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3.5 px-4 mt-2 rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-amber-500 hover:from-blue-500 hover:via-purple-500 hover:to-amber-400 text-white font-semibold text-sm shadow-[0_0_25px_rgba(59,130,246,0.4)] flex items-center justify-center gap-2 transform active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+            className="w-full min-h-[44px] py-3.5 px-4 mt-2 rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-amber-500 hover:from-blue-500 hover:via-purple-500 hover:to-amber-400 text-white font-semibold text-sm shadow-[0_0_25px_rgba(59,130,246,0.4)] flex items-center justify-center gap-2 transform active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -182,14 +184,12 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
           </button>
         </form>
 
-        {/* Credential Reference Box */}
-        <div className="mt-5 p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-center">
-          <div className="text-[11px] text-slate-400 font-mono">
-            Initial Setup Credentials:
-          </div>
-          <div className="text-[11px] text-amber-300/90 font-mono mt-0.5">
-            zakir1kb@gmail.com &bull; khan@123
-          </div>
+        {/* Security Notice Box */}
+        <div className="mt-5 p-3 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center gap-2 text-center">
+          <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          <span className="text-[11px] text-slate-400">
+            Encrypted Bearer Session &bull; Rate-Limited Brute Force Protection (5 attempts max)
+          </span>
         </div>
       </div>
     </div>

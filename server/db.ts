@@ -88,12 +88,18 @@ export function saveAuth(auth: AuthStorage): void {
 }
 
 export function getDatabase(): SiteDatabase {
-  if (cachedDB) return cachedDB;
+  if (cachedDB) {
+    if (!cachedDB.inquiries) cachedDB.inquiries = JSON.parse(JSON.stringify(INITIAL_DATABASE.inquiries || []));
+    if (!cachedDB.notifications) cachedDB.notifications = JSON.parse(JSON.stringify(INITIAL_DATABASE.notifications || []));
+    return cachedDB;
+  }
 
   if (fs.existsSync(DB_FILE)) {
     try {
       const raw = fs.readFileSync(DB_FILE, 'utf-8');
       cachedDB = JSON.parse(raw);
+      if (!cachedDB!.inquiries) cachedDB!.inquiries = JSON.parse(JSON.stringify(INITIAL_DATABASE.inquiries || []));
+      if (!cachedDB!.notifications) cachedDB!.notifications = JSON.parse(JSON.stringify(INITIAL_DATABASE.notifications || []));
       return cachedDB!;
     } catch (e) {
       console.error('Failed reading database file, loading initial database:', e);
@@ -109,6 +115,25 @@ export function getDatabase(): SiteDatabase {
 export function saveDatabase(data: SiteDatabase): void {
   cachedDB = data;
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+export function addNotification(title: string, message: string, type: 'inquiry' | 'activity' | 'system' | 'cv' = 'activity', link?: string): void {
+  const db = getDatabase();
+  if (!db.notifications) db.notifications = [];
+  const newNotif = {
+    id: 'notif_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+    title,
+    message,
+    type,
+    timestamp: new Date().toISOString(),
+    read: false,
+    link
+  };
+  db.notifications.unshift(newNotif);
+  if (db.notifications.length > 50) {
+    db.notifications = db.notifications.slice(0, 50);
+  }
+  saveDatabase(db);
 }
 
 export function addActivity(action: string, category: string, details: string, user: string = 'Zakirullah'): void {

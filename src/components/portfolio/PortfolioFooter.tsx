@@ -8,9 +8,7 @@ import {
   Facebook,
   Youtube,
   Linkedin,
-  Download,
-  MessageCircle,
-  FileDown
+  MessageCircle
 } from 'lucide-react';
 
 export const PortfolioFooter: React.FC = () => {
@@ -24,10 +22,6 @@ export const PortfolioFooter: React.FC = () => {
 
   const whatsappNumber = contact?.whatsappNumber || '03439179353';
   const cleanNumber = whatsappNumber.replace(/[^0-9]/g, '');
-
-  const handleDownloadPDF = () => {
-    window.print();
-  };
 
   return (
     <footer className={`relative pt-16 pb-12 border-t overflow-hidden transition-colors ${
@@ -44,8 +38,8 @@ export const PortfolioFooter: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Top Footer Row */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-10 border-b border-white/10">
-          <div>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-10 border-b border-white/10 text-center md:text-left">
+          <div className="flex flex-col items-center md:items-start">
             <ZKLogo size="lg" />
             <div className="font-cursive text-amber-500 text-xl mt-2 tracking-wide">
               Your Vision, My Creativity.
@@ -53,19 +47,19 @@ export const PortfolioFooter: React.FC = () => {
           </div>
 
           {/* Navigation Links */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-medium">
-            <a href="#home" className="hover:text-amber-500 transition-colors">Home</a>
-            <a href="#about" className="hover:text-amber-500 transition-colors">About</a>
-            <a href="#services" className="hover:text-amber-500 transition-colors">Services</a>
-            <a href="#portfolio" className="hover:text-amber-500 transition-colors">Portfolio</a>
-            <a href="#testimonials" className="hover:text-amber-500 transition-colors">Testimonials</a>
-            <a href="#contact" className="hover:text-amber-500 transition-colors">Contact</a>
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-medium">
+            <a href="#home" className="hover:text-amber-500 transition-colors py-1">Home</a>
+            <a href="#about" className="hover:text-amber-500 transition-colors py-1">About</a>
+            <a href="#services" className="hover:text-amber-500 transition-colors py-1">Services</a>
+            <a href="#portfolio" className="hover:text-amber-500 transition-colors py-1">Portfolio</a>
+            <a href="#testimonials" className="hover:text-amber-500 transition-colors py-1">Testimonials</a>
+            <a href="#contact" className="hover:text-amber-500 transition-colors py-1">Contact</a>
           </div>
 
           {/* Back to Top Button */}
           <button
             onClick={scrollToTop}
-            className={`px-4 py-2 rounded-full border text-xs font-semibold flex items-center gap-2 transition-all transform hover:-translate-y-1 shadow-sm ${
+            className={`px-4 py-2 rounded-full border text-xs font-semibold flex items-center gap-2 transition-all transform hover:-translate-y-1 shadow-sm cursor-pointer min-h-[40px] ${
               isDark
                 ? 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300 hover:text-white'
                 : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-700'
@@ -77,7 +71,7 @@ export const PortfolioFooter: React.FC = () => {
         </div>
 
         {/* Bottom Footer Row */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center sm:text-left">
           <div>
             &copy; {new Date().getFullYear()} Zakirullah Creative Studio. All Rights Reserved.
           </div>
@@ -97,13 +91,13 @@ export const PortfolioFooter: React.FC = () => {
                   href={soc.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${
+                  className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
                     isDark
                       ? 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:border-white/30'
                       : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 shadow-sm'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-4 h-4" />
                 </a>
               );
             })}
@@ -118,33 +112,13 @@ export const PortfolioFooter: React.FC = () => {
         </div>
       </div>
 
-      {/* Floating Action Badge at bottom right: WhatsApp and Download Portfolio PDF */}
-      <div className="fixed bottom-6 right-6 z-30 flex flex-col items-end gap-3 pointer-events-auto">
-        {/* Download Portfolio PDF Badge */}
-        <button
-          onClick={handleDownloadPDF}
-          className={`hidden sm:flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border text-xs font-semibold shadow-xl backdrop-blur-xl transition-all transform hover:scale-105 group ${
-            isDark
-              ? 'bg-[#091129]/90 hover:bg-[#0e1b40] border-blue-500/40 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]'
-              : 'bg-white/95 hover:bg-slate-50 border-slate-300 text-slate-800 shadow-md'
-          }`}
-          title="Download Portfolio PDF"
-        >
-          <div className="w-7 h-7 rounded-xl bg-blue-500/20 text-cyan-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <FileDown className="w-4 h-4" />
-          </div>
-          <div className="text-left">
-            <div className="text-[10px] text-slate-400 uppercase leading-none font-bold">Download</div>
-            <div className="text-xs font-bold leading-tight">Portfolio PDF</div>
-          </div>
-        </button>
-
-        {/* Floating WhatsApp Bubble */}
+      {/* Floating Action Button at bottom right: WhatsApp */}
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-30 pointer-events-auto">
         <a
           href={`https://wa.me/92${cleanNumber.startsWith('0') ? cleanNumber.slice(1) : cleanNumber}?text=Hello%20Zakirullah!`}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-13 h-13 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white flex items-center justify-center shadow-[0_0_25px_rgba(16,185,129,0.5)] border-2 border-white/40 transition-all transform hover:scale-110 active:scale-95"
+          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white flex items-center justify-center shadow-[0_0_25px_rgba(16,185,129,0.5)] border-2 border-white/40 transition-all transform hover:scale-110 active:scale-95 cursor-pointer"
           title="Chat on WhatsApp"
         >
           <MessageCircle className="w-6 h-6 fill-white" />

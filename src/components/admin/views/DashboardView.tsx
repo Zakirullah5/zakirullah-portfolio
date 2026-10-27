@@ -26,7 +26,8 @@ import {
   Trash2,
   TrendingUp,
   Activity,
-  HardDrive
+  HardDrive,
+  FileDown
 } from 'lucide-react';
 
 interface DashboardViewProps {
@@ -54,6 +55,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   ];
 
   const quickActions = [
+    { label: 'Upload CV', icon: FileDown, color: 'bg-emerald-600/30 text-emerald-300 border-emerald-500/40', action: () => onSelectView('cv') },
     { label: 'Add Project', icon: Plus, color: 'bg-blue-600/30 text-blue-300 border-blue-500/40', action: () => onSelectView('portfolio') },
     { label: 'Upload Image', icon: Image, color: 'bg-cyan-600/30 text-cyan-300 border-cyan-500/40', action: () => onSelectView('images') },
     { label: 'Upload Video', icon: Video, color: 'bg-purple-600/30 text-purple-300 border-purple-500/40', action: () => onSelectView('videos') },
@@ -65,6 +67,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   ];
 
   const manageContentModules = [
+    { label: 'Upload CV / Resume', desc: 'Manage portfolio CV PDF', icon: FileDown, view: 'cv' as AdminViewType, color: 'from-emerald-600 to-teal-600' },
     { label: 'Logo Manager', desc: 'Manage logos', icon: Shield, view: 'logo' as AdminViewType, color: 'from-blue-600 to-cyan-600' },
     { label: 'Portfolio Manager', desc: 'Manage projects', icon: Briefcase, view: 'portfolio' as AdminViewType, color: 'from-purple-600 to-pink-600' },
     { label: 'Image Manager', desc: 'Manage images', icon: Image, view: 'images' as AdminViewType, color: 'from-amber-600 to-orange-600' },
@@ -81,13 +84,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Welcome Banner Card Matching Image 2 */}
-      <div className="relative rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-[#0c1840]/90 via-[#0e163b]/95 to-[#160c38]/90 border border-blue-500/30 shadow-[0_0_35px_rgba(59,130,246,0.25)] backdrop-blur-xl overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="relative rounded-3xl p-5 sm:p-8 bg-gradient-to-r from-[#0c1840]/90 via-[#0e163b]/95 to-[#160c38]/90 border border-blue-500/30 shadow-[0_0_35px_rgba(59,130,246,0.25)] backdrop-blur-xl overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-5 sm:gap-6">
         {/* Glow ambient */}
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] pointer-events-none" />
 
         {/* Left: Avatar + Greeting + Buttons */}
-        <div className="flex items-center gap-5 z-10">
-          <div className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-2xl p-1 bg-gradient-to-tr from-cyan-400 via-purple-500 to-amber-400 shadow-[0_0_20px_rgba(59,130,246,0.4)] flex-shrink-0">
+        <div className="flex flex-col xs:flex-row items-start xs:items-center gap-4 sm:gap-5 z-10 w-full md:w-auto">
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl p-1 bg-gradient-to-tr from-cyan-400 via-purple-500 to-amber-400 shadow-[0_0_20px_rgba(59,130,246,0.4)] flex-shrink-0">
             <img
               src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}
               alt={user?.name || 'Admin'}
@@ -99,8 +102,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </span>
           </div>
 
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight flex items-center gap-2">
+          <div className="min-w-0">
+            <h2 className="text-xl sm:text-3xl font-display font-bold text-white tracking-tight flex items-center gap-2">
               <span>Welcome Back, {user?.name || 'Zakirullah'}!</span>
               <span>👋</span>
             </h2>
@@ -109,10 +112,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </p>
 
             {/* Quick Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3 mt-4">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-4">
               <button
                 onClick={onNavigateToPortfolio}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all"
+                className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all min-h-[38px] cursor-pointer"
               >
                 <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
                 <span>View Website</span>
@@ -120,7 +123,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               <button
                 onClick={onOpenLivePreview}
-                className="px-4 py-2 rounded-xl bg-blue-600/30 hover:bg-blue-600/40 border border-blue-500/40 text-blue-200 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all"
+                className="px-3.5 py-2 rounded-xl bg-blue-600/30 hover:bg-blue-600/40 border border-blue-500/40 text-blue-200 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all min-h-[38px] cursor-pointer"
               >
                 <Eye className="w-3.5 h-3.5 text-cyan-300" />
                 <span>Live Preview</span>
@@ -129,7 +132,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <button
                 onClick={() => publishChanges()}
                 disabled={isSaving}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all"
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all min-h-[38px] cursor-pointer"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 <span>Publish Changes</span>
@@ -156,17 +159,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* 2. Six Metric Cards Row Matching Image 2 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
         {stats.map((st, idx) => {
           const Icon = st.icon;
           return (
             <div
               key={idx}
               onClick={() => onSelectView(st.view)}
-              className="p-4 rounded-2xl bg-[#090e24]/90 hover:bg-[#0d1433] border border-blue-500/20 hover:border-purple-400/50 shadow-md transition-all duration-200 transform hover:-translate-y-1 cursor-pointer flex flex-col justify-between"
+              className="p-3.5 sm:p-4 rounded-2xl bg-[#090e24]/90 hover:bg-[#0d1433] border border-blue-500/20 hover:border-purple-400/50 shadow-md transition-all duration-200 transform hover:-translate-y-1 cursor-pointer flex flex-col justify-between"
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-9 h-9 rounded-xl bg-gradient-to-tr ${st.color} flex items-center justify-center text-white shadow-md`}>
+              <div className="flex items-center justify-between mb-2.5 sm:mb-3">
+                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr ${st.color} flex items-center justify-center text-white shadow-md flex-shrink-0`}>
                   <Icon className="w-4 h-4" />
                 </div>
                 <span className="text-[10px] text-emerald-400 font-medium">
@@ -175,10 +178,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               <div>
-                <div className="text-2xl font-display font-black text-white">
+                <div className="text-xl sm:text-2xl font-display font-black text-white">
                   {st.value}
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5 line-clamp-1">
+                <div className="text-xs text-slate-400 mt-0.5 truncate">
                   {st.label}
                 </div>
               </div>
@@ -294,16 +297,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             Quick Actions
           </h3>
 
-          <div className="grid grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-2 xs:grid-cols-4 gap-2 sm:gap-2.5">
             {quickActions.map((qa, i) => {
               const Icon = qa.icon;
               return (
                 <button
                   key={i}
                   onClick={qa.action}
-                  className={`p-3 rounded-2xl ${qa.color} border hover:brightness-125 transition-all flex flex-col items-center justify-center text-center group cursor-pointer`}
+                  className={`p-2.5 sm:p-3 rounded-2xl ${qa.color} border hover:brightness-125 transition-all flex flex-col items-center justify-center text-center group cursor-pointer min-h-[64px]`}
                 >
-                  <Icon className="w-5 h-5 mb-1.5 group-hover:scale-110 transition-transform" />
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 mb-1 group-hover:scale-110 transition-transform" />
                   <span className="text-[10px] font-semibold text-white leading-tight">
                     {qa.label}
                   </span>
@@ -497,23 +500,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           Manage Content Modules
         </h3>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
           {manageContentModules.map((mod, i) => {
             const Icon = mod.icon;
             return (
               <button
                 key={i}
                 onClick={() => onSelectView(mod.view)}
-                className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/5 hover:border-purple-400/40 text-left transition-all flex items-center gap-3 group cursor-pointer"
+                className="p-3 sm:p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/5 hover:border-purple-400/40 text-left transition-all flex items-center gap-2.5 sm:gap-3 group cursor-pointer"
               >
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${mod.color} flex items-center justify-center text-white flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                  <Icon className="w-5 h-5" />
+                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr ${mod.color} flex items-center justify-center text-white flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <div>
-                  <div className="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors truncate">
                     {mod.label}
                   </div>
-                  <div className="text-[10px] text-slate-400">
+                  <div className="text-[10px] text-slate-400 truncate">
                     {mod.desc}
                   </div>
                 </div>

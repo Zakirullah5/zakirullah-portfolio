@@ -14,7 +14,8 @@ import {
   createSessionToken,
   validateSessionToken,
   revokeSessionToken,
-  addActivity
+  addActivity,
+  addNotification
 } from './server/db.ts';
 
 // Initialize environment variables from .env
@@ -228,8 +229,8 @@ app.post('/api/admin/change-password', authenticateAdmin, (req: Request, res: Re
     return;
   }
 
-  if (newPassword.length < 6) {
-    res.status(400).json({ success: false, message: 'New password must be at least 6 characters long' });
+  if (newPassword.length < 8) {
+    res.status(400).json({ success: false, message: 'New password must be at least 8 characters long for enhanced security' });
     return;
   }
 
@@ -244,8 +245,41 @@ app.post('/api/admin/change-password', authenticateAdmin, (req: Request, res: Re
   auth.salt = salt;
   saveAuth(auth);
 
-  addActivity('Password Changed', 'Security', 'Admin master password updated securely');
+  addActivity('Password Changed', 'Security', 'Admin master password updated securely with PBKDF2/SHA-512');
   res.json({ success: true, message: 'Password changed successfully' });
+});
+
+// Change Admin Login ID (Email) - Requires Master Password Verification
+app.post('/api/admin/change-email', authenticateAdmin, (req: Request, res: Response) => {
+  const { currentPassword, newEmail } = req.body;
+
+  if (!currentPassword || !newEmail || typeof currentPassword !== 'string' || typeof newEmail !== 'string') {
+    res.status(400).json({ success: false, message: 'Current password and new login email are required' });
+    return;
+  }
+
+  const trimmedEmail = newEmail.trim().toLowerCase();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(trimmedEmail)) {
+    res.status(400).json({ success: false, message: 'Please enter a valid email address format' });
+    return;
+  }
+
+  const auth = getAuth();
+  if (!verifyPassword(currentPassword, auth.passwordHash, auth.salt)) {
+    res.status(400).json({ success: false, message: 'Current master password does not match. Unauthorized attempt.' });
+    return;
+  }
+
+  auth.adminEmail = trimmedEmail;
+  saveAuth(auth);
+
+  const db = getDatabase();
+  db.admin.email = trimmedEmail;
+  saveDatabase(db);
+
+  addActivity('Admin Login ID Changed', 'Security', `Admin login email changed to ${trimmedEmail}`);
+  res.json({ success: true, message: 'Admin login ID (email) updated successfully', email: trimmedEmail });
 });
 
 // Update Admin Profile
@@ -588,6 +622,67 @@ app.post('/api/admin/upload', authenticateAdmin, upload.single('file'), (req: Re
   });
 });
 
+// Dedicated CV / Resume Upload & Replace Endpoint
+app.post('/api/admin/cv/upload', authenticateAdmin, upload.single('cvFile'), (req: Request, res: Response) => {
+  if (!req.file) {
+    res.status(400).json({ success: false, message: 'No CV/PDF file uploaded' });
+    return;
+  }
+
+  const file = req.file;
+  const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
+  const fileUrl = `/uploads/${file.filename}`;
+  const fileSizeMb = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+  const now = new Date().toISOString();
+
+  const mediaItem = {
+    id: 'med_' + Date.now(),
+    name: file.originalname,
+    url: fileUrl,
+    type: 'document' as const,
+    format: ext,
+    sizeBytes: file.size,
+    createdAt: now
+  };
+
+  const db = getDatabase();
+  db.media.unshift(mediaItem);
+  db.hero.cvPdfUrl = fileUrl;
+  db.hero.cvFileName = file.originalname;
+  db.hero.cvFileSize = fileSizeMb;
+  db.hero.cvLastUpdated = now;
+  db.isDraft = false;
+  db.lastPublishedAt = now;
+  saveDatabase(db);
+
+  addActivity('CV / Resume Updated', 'Content Control', `Uploaded and replaced active CV document with "${file.originalname}" (${fileSizeMb})`);
+  res.json({
+    success: true,
+    message: 'CV uploaded and updated successfully!',
+    hero: db.hero,
+    file: mediaItem
+  });
+});
+
+// Reset or Remove Custom CV (reverts back to browser print / default)
+app.delete('/api/admin/cv', authenticateAdmin, (_req: Request, res: Response) => {
+  const db = getDatabase();
+  delete db.hero.cvPdfUrl;
+  delete db.hero.cvFileName;
+  delete db.hero.cvFileSize;
+  delete db.hero.cvLastUpdated;
+  db.isDraft = false;
+  db.lastPublishedAt = new Date().toISOString();
+  saveDatabase(db);
+
+  addActivity('CV Reset to Default', 'Content Control', 'Reset portfolio CV download to default browser print format');
+  res.json({
+    success: true,
+    message: 'CV reset to default mode',
+    hero: db.hero
+  });
+});
+
 // Convert / Pin Uploaded Media Directly as Portfolio Project
 app.post('/api/admin/media/:id/to-project', authenticateAdmin, (req: Request, res: Response) => {
   const { id } = req.params;
@@ -698,6 +793,57 @@ app.get('/api/admin/activities', authenticateAdmin, (_req: Request, res: Respons
   res.json({ success: true, activities: db.activities });
 });
 
+// Real Notifications Endpoints
+app.get('/api/admin/notifications', authenticateAdmin, (_req: Request, res: Response) => {
+  const db = getDatabase();
+  const notifs = db.notifications || [];
+  const unreadCount = notifs.filter((n) => !n.read).length;
+  res.json({
+    success: true,
+    notifications: notifs,
+    unreadCount,
+    inquiries: db.inquiries || []
+  });
+});
+
+app.post('/api/admin/notifications/mark-all-read', authenticateAdmin, (_req: Request, res: Response) => {
+  const db = getDatabase();
+  if (db.notifications) {
+    db.notifications.forEach((n) => (n.read = true));
+  }
+  if (db.inquiries) {
+    db.inquiries.forEach((inq) => (inq.read = true));
+  }
+  saveDatabase(db);
+  res.json({ success: true, message: 'All notifications marked as read' });
+});
+
+app.post('/api/admin/notifications/:id/read', authenticateAdmin, (req: Request, res: Response) => {
+  const { id } = req.params;
+  const db = getDatabase();
+  const notif = db.notifications?.find((n) => n.id === id);
+  if (notif) notif.read = true;
+  saveDatabase(db);
+  res.json({ success: true, notification: notif });
+});
+
+app.delete('/api/admin/notifications/:id', authenticateAdmin, (req: Request, res: Response) => {
+  const { id } = req.params;
+  const db = getDatabase();
+  if (db.notifications) {
+    db.notifications = db.notifications.filter((n) => n.id !== id);
+  }
+  saveDatabase(db);
+  res.json({ success: true, message: 'Notification removed' });
+});
+
+app.delete('/api/admin/notifications', authenticateAdmin, (_req: Request, res: Response) => {
+  const db = getDatabase();
+  db.notifications = [];
+  saveDatabase(db);
+  res.json({ success: true, message: 'All notifications cleared' });
+});
+
 // Public Client Contact & Inquiry Submission Endpoint
 app.post('/api/contact/inquiry', (req: Request, res: Response) => {
   const { name, email, phone, service, message } = req.body;
@@ -712,6 +858,33 @@ app.post('/api/contact/inquiry', (req: Request, res: Response) => {
   const cleanPhone = (typeof phone === 'string' ? phone.trim() : '').slice(0, 50);
   const cleanService = (typeof service === 'string' ? service.trim() : 'General Inquiry').slice(0, 100);
   const cleanMessage = (typeof message === 'string' ? message.trim() : '').slice(0, 1000);
+  const now = new Date().toISOString();
+
+  const db = getDatabase();
+  if (!db.inquiries) db.inquiries = [];
+
+  const newInquiry = {
+    id: 'inq_' + Date.now(),
+    name: cleanName,
+    email: cleanEmail,
+    phone: cleanPhone,
+    service: cleanService,
+    message: cleanMessage,
+    createdAt: now,
+    read: false
+  };
+
+  db.inquiries.unshift(newInquiry);
+  if (db.inquiries.length > 100) {
+    db.inquiries = db.inquiries.slice(0, 100);
+  }
+
+  addNotification(
+    `New Inquiry: ${cleanName}`,
+    `Service: ${cleanService} | ${cleanMessage.substring(0, 80) || 'Contact via ' + (cleanEmail || cleanPhone || 'WhatsApp')}`,
+    'inquiry',
+    'contact'
+  );
 
   addActivity(
     `New Inquiry: ${cleanName}`,
@@ -722,7 +895,8 @@ app.post('/api/contact/inquiry', (req: Request, res: Response) => {
 
   res.json({
     success: true,
-    message: 'Thank you! Your inquiry has been sent to Zakirullah. We will respond shortly.'
+    message: 'Thank you! Your inquiry has been sent to Zakirullah. We will respond shortly.',
+    inquiry: newInquiry
   });
 });
 

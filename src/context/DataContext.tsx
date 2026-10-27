@@ -12,7 +12,8 @@ import {
   ContactSettings,
   LogoSettings,
   ThemeSettings,
-  SystemSettings
+  SystemSettings,
+  AdminNotification
 } from '../types/index.ts';
 import { useAuth } from './AuthContext.tsx';
 
@@ -21,6 +22,12 @@ interface DataContextType {
   isLoading: boolean;
   isSaving: boolean;
   refreshData: () => Promise<void>;
+  notifications: AdminNotification[];
+  unreadCount: number;
+  markNotificationRead: (id: string) => Promise<void>;
+  markAllNotificationsRead: () => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
+  clearAllNotifications: () => Promise<void>;
   updateHero: (hero: Partial<HeroSettings>) => Promise<boolean>;
   updateAbout: (about: Partial<AboutSettings>) => Promise<boolean>;
   updateContact: (contact: Partial<ContactSettings>) => Promise<boolean>;
@@ -41,6 +48,8 @@ interface DataContextType {
   updateTestimonial: (id: string, test: Partial<Testimonial>) => Promise<boolean>;
   deleteTestimonial: (id: string) => Promise<boolean>;
   uploadFile: (file: File) => Promise<{ success: boolean; url?: string; file?: MediaFile; error?: string }>;
+  uploadCV: (file: File) => Promise<{ success: boolean; error?: string; hero?: HeroSettings }>;
+  removeCV: () => Promise<boolean>;
   deleteFile: (id: string) => Promise<boolean>;
   publishChanges: () => Promise<boolean>;
   restoreBackup: (backupData: any) => Promise<boolean>;
@@ -423,6 +432,48 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const uploadCV = async (file: File) => {
+    if (!token) return { success: false, error: 'Unauthorized' };
+    const formData = new FormData();
+    formData.append('cvFile', file);
+    try {
+      const res = await fetch('/api/admin/cv/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        await refreshData();
+        showToast(`CV / Resume updated with "${file.name}"!`);
+        return { success: true, hero: json.hero };
+      }
+      return { success: false, error: json.message || 'CV upload failed' };
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Network error' };
+    }
+  };
+
+  const removeCV = async () => {
+    if (!token) return false;
+    try {
+      const res = await fetch('/api/admin/cv', {
+        method: 'DELETE',
+        headers: authHeaders
+      });
+      if (res.ok) {
+        await refreshData();
+        showToast('CV reset to default browser print format');
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
   const deleteFile = async (id: string) => {
     if (!token) return false;
     try {
@@ -484,6 +535,55 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const notifications = data?.notifications || [];
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const markNotificationRead = async (id: string) => {
+    if (!token) return;
+    try {
+      await fetch(`/api/admin/notifications/${id}/read`, {
+        method: 'POST',
+        headers: authHeaders
+      });
+      await refreshData();
+    } catch {}
+  };
+
+  const markAllNotificationsRead = async () => {
+    if (!token) return;
+    try {
+      await fetch('/api/admin/notifications/mark-all-read', {
+        method: 'POST',
+        headers: authHeaders
+      });
+      await refreshData();
+      showToast('All notifications marked as read');
+    } catch {}
+  };
+
+  const deleteNotification = async (id: string) => {
+    if (!token) return;
+    try {
+      await fetch(`/api/admin/notifications/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders
+      });
+      await refreshData();
+    } catch {}
+  };
+
+  const clearAllNotifications = async () => {
+    if (!token) return;
+    try {
+      await fetch('/api/admin/notifications', {
+        method: 'DELETE',
+        headers: authHeaders
+      });
+      await refreshData();
+      showToast('All notifications cleared');
+    } catch {}
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -491,6 +591,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         isSaving,
         refreshData,
+        notifications,
+        unreadCount,
+        markNotificationRead,
+        markAllNotificationsRead,
+        deleteNotification,
+        clearAllNotifications,
         updateHero,
         updateAbout,
         updateContact,
@@ -511,6 +617,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateTestimonial,
         deleteTestimonial,
         uploadFile,
+        uploadCV,
+        removeCV,
         deleteFile,
         publishChanges,
         restoreBackup,

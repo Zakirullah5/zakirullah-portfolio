@@ -38,6 +38,21 @@ export const HeroSection: React.FC = () => {
     { label: 'Client Satisfaction', value: 100, suffix: '%' },
   ];
 
+  const handleDownloadCV = () => {
+    if (hero?.cvPdfUrl) {
+      const link = document.createElement('a');
+      link.href = hero.cvPdfUrl;
+      link.download = hero.cvFileName || 'Zakirullah_Portfolio_CV.pdf';
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      window.print();
+    }
+  };
+
   return (
     <section id="home" className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden">
       {/* Background Lighting Gradients */}
@@ -72,7 +87,7 @@ export const HeroSection: React.FC = () => {
             </div>
 
             {/* Giant 3D Metallic Name */}
-            <h1 className="text-4xl sm:text-6xl xl:text-7xl font-display font-black tracking-tight leading-none">
+            <h1 className="text-3xl xs:text-4xl sm:text-6xl xl:text-7xl font-display font-black tracking-tight leading-tight sm:leading-none break-words">
               <span className={`text-transparent bg-clip-text ${
                 isDark
                   ? 'bg-gradient-to-r from-white via-cyan-200 to-blue-400 drop-shadow-[0_0_35px_rgba(56,189,248,0.45)]'
@@ -83,27 +98,30 @@ export const HeroSection: React.FC = () => {
             </h1>
 
             {/* Professional Title Multi-Badge */}
-            <div className={`text-sm sm:text-base md:text-lg font-medium flex flex-wrap items-center justify-center lg:justify-start gap-2 pt-1 ${
+            <div className={`text-xs sm:text-base md:text-lg font-medium flex flex-wrap items-center justify-center lg:justify-start gap-1.5 sm:gap-2 pt-1 ${
               isDark ? 'text-slate-300' : 'text-slate-700'
             }`}>
-              <span className="text-cyan-500 font-semibold">Graphic Designer</span>
-              <span className="text-slate-400">|</span>
-              <span className="text-purple-500 font-semibold">Logo Creator</span>
-              <span className="text-slate-400">|</span>
-              <span className="text-amber-500 font-semibold">3D Animator</span>
-              <span className="text-slate-400">|</span>
-              <span className="text-blue-500 font-semibold">AI Video Creator</span>
-              <span className="text-slate-400">|</span>
-              <span className="text-emerald-500 font-semibold">Video Editor</span>
+              {(hero?.professionalTitle || 'Graphic Designer | Logo Creator | 3D Animator | AI Video Creator | Video Editor')
+                .split('|')
+                .map((titlePart, idx, arr) => {
+                  const colors = ['text-cyan-500', 'text-purple-500', 'text-amber-500', 'text-blue-500', 'text-emerald-500', 'text-rose-500'];
+                  const colorClass = colors[idx % colors.length];
+                  return (
+                    <React.Fragment key={idx}>
+                      <span className={`${colorClass} font-semibold`}>{titlePart.trim()}</span>
+                      {idx < arr.length - 1 && <span className="text-slate-400 opacity-60">|</span>}
+                    </React.Fragment>
+                  );
+                })}
             </div>
 
             {/* Cursive Golden Slogan */}
-            <p className="font-cursive text-2xl sm:text-3xl lg:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 tracking-wide drop-shadow-[0_0_12px_rgba(234,179,8,0.4)]">
+            <p className="font-cursive text-xl sm:text-3xl lg:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 tracking-wide drop-shadow-[0_0_12px_rgba(234,179,8,0.4)]">
               "{hero?.creativeSlogan || 'Turning Imagination Into Extraordinary Digital Experiences.'}"
             </p>
 
             {/* Bio Description */}
-            <p className={`text-sm sm:text-base max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal ${
+            <p className={`text-xs sm:text-base max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal ${
               isDark ? 'text-slate-300' : 'text-slate-600'
             }`}>
               {hero?.description ||
@@ -111,30 +129,31 @@ export const HeroSection: React.FC = () => {
             </p>
 
             {/* 3 CTA Action Buttons */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 pt-2">
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center lg:justify-start gap-3 sm:gap-3.5 pt-2">
               <a
                 href={hero?.primaryButtonLink || '#portfolio'}
-                className="px-6 py-3 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white font-semibold text-xs sm:text-sm shadow-[0_0_30px_rgba(59,130,246,0.45)] hover:shadow-[0_0_40px_rgba(99,102,241,0.6)] flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                className="w-full sm:w-auto px-6 py-3 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white font-semibold text-xs sm:text-sm shadow-[0_0_30px_rgba(59,130,246,0.45)] hover:shadow-[0_0_40px_rgba(99,102,241,0.6)] flex items-center justify-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer min-h-[44px]"
               >
                 <span>{hero?.primaryButtonText || 'Explore Portfolio'}</span>
                 <ArrowRight className="w-4 h-4" />
               </a>
 
               <button
-                onClick={() => window.print()}
-                className={`px-6 py-3 rounded-full border text-xs sm:text-sm font-semibold flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 transition-all ${
+                onClick={handleDownloadCV}
+                className={`w-full sm:w-auto px-6 py-3 rounded-full border text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer min-h-[44px] ${
                   isDark
                     ? 'bg-white/[0.05] hover:bg-white/10 border-white/15 text-white'
                     : 'bg-white hover:bg-slate-50 border-slate-300 text-slate-800 shadow-sm'
                 }`}
+                title={hero?.cvFileName ? `Download ${hero.cvFileName}` : 'Download CV / PDF'}
               >
                 <FileDown className="w-4 h-4 text-cyan-500" />
-                <span>Download CV / PDF</span>
+                <span>{hero?.cvButtonText || 'Download CV / PDF'}</span>
               </button>
 
               <a
                 href={hero?.secondaryButtonLink || '#contact'}
-                className={`px-6 py-3 rounded-full border text-xs sm:text-sm font-semibold flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 transition-all ${
+                className={`w-full sm:w-auto px-6 py-3 rounded-full border text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer min-h-[44px] ${
                   isDark
                     ? 'bg-white/[0.03] hover:bg-white/10 border-white/10 text-slate-300 hover:text-white'
                     : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
@@ -248,57 +267,65 @@ export const HeroSection: React.FC = () => {
             {/* Interactive Showcase Card */}
             <TiltCard
               maxTilt={8}
-              className={`w-full max-w-[420px] aspect-[4/5] rounded-[36px] p-2 border shadow-2xl backdrop-blur-xl flex flex-col justify-between overflow-hidden group ${
+              className={`w-full max-w-[320px] sm:max-w-[420px] aspect-[4/5] rounded-[28px] sm:rounded-[36px] p-2 border shadow-2xl backdrop-blur-xl flex flex-col justify-between overflow-hidden group ${
                 isDark
                   ? 'bg-gradient-to-tr from-blue-600/25 via-purple-600/20 to-amber-500/20 border-blue-500/40 shadow-[0_0_60px_rgba(59,130,246,0.3)]'
                   : 'bg-white/95 border-slate-200 shadow-2xl'
               }`}
             >
               {/* Inner ambient card background */}
-              <div className={`absolute inset-0 rounded-[32px] overflow-hidden ${
+              <div className={`absolute inset-0 rounded-[26px] sm:rounded-[32px] overflow-hidden ${
                 isDark
                   ? 'bg-gradient-to-b from-[#0e1738]/90 via-[#070b1f]/95 to-[#050714]'
                   : 'bg-gradient-to-b from-slate-50 via-white to-slate-100'
               }`} />
 
               {/* Floating Adobe Badges (Ps, Ai, Pr, Ae) */}
-              <div className="absolute top-6 left-6 z-20 w-10 h-10 rounded-xl bg-[#001e36]/90 border border-cyan-400/50 shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center justify-center font-bold text-cyan-300 text-sm animate-float-slow">
+              <div className="absolute top-4 sm:top-6 left-4 sm:left-6 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#001e36]/90 border border-cyan-400/50 shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center justify-center font-bold text-cyan-300 text-xs sm:text-sm animate-float-slow">
                 Ps
               </div>
-              <div className="absolute top-6 right-6 z-20 w-10 h-10 rounded-xl bg-[#330000]/90 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.4)] flex items-center justify-center font-bold text-amber-300 text-sm animate-float-slow [animation-delay:1s]">
+              <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#330000]/90 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.4)] flex items-center justify-center font-bold text-amber-300 text-xs sm:text-sm animate-float-slow [animation-delay:1s]">
                 Ai
               </div>
-              <div className="absolute top-24 right-4 z-20 w-10 h-10 rounded-xl bg-[#330066]/90 border border-purple-400/50 shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center font-bold text-purple-300 text-sm animate-float-slow [animation-delay:2s]">
+              <div className="absolute top-16 sm:top-24 right-3 sm:right-4 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#330066]/90 border border-purple-400/50 shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center font-bold text-purple-300 text-xs sm:text-sm animate-float-slow [animation-delay:2s]">
                 Pr
               </div>
 
               {/* Top Crown & ZK 3D Emblem Halo */}
-              <div className="relative z-10 pt-4 flex flex-col items-center">
+              <div className="relative z-10 pt-3 sm:pt-4 flex flex-col items-center">
                 <div className="relative">
-                  <div className="text-2xl text-amber-300 drop-shadow-[0_0_12px_rgba(234,179,8,0.8)]">👑</div>
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500/30 to-purple-600/30 border-2 border-amber-400/60 p-1 shadow-[0_0_25px_rgba(234,179,8,0.5)] flex items-center justify-center my-1">
-                    <span className="font-display font-black text-2xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
-                      ZK
-                    </span>
+                  <div className="text-xl sm:text-2xl text-amber-300 drop-shadow-[0_0_12px_rgba(234,179,8,0.8)]">👑</div>
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-amber-500/30 to-purple-600/30 border-2 border-amber-400/60 p-1 shadow-[0_0_25px_rgba(234,179,8,0.5)] flex items-center justify-center my-1">
+                    {(data?.logos?.threeDLogoUrl || hero?.threeDLogoUrl) ? (
+                      <img
+                        src={data?.logos?.threeDLogoUrl || hero?.threeDLogoUrl}
+                        alt="3D Logo"
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <span className="font-display font-black text-xl sm:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
+                        ZK
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                <div className="font-cursive text-amber-400 text-lg mt-1 tracking-wider drop-shadow-md">
+                <div className="font-cursive text-amber-400 text-base sm:text-lg mt-0.5 sm:mt-1 tracking-wider drop-shadow-md">
                   Design &bull; Edit &bull; Create &bull; Grow
                 </div>
               </div>
 
               {/* Center Dynamic Area: Three.js Canvas OR Avatar Photo */}
-              <div className="relative z-10 flex-1 flex items-center justify-center px-4 overflow-hidden">
+              <div className="relative z-10 flex-1 flex items-center justify-center px-2 sm:px-4 overflow-hidden">
                 {activeTab === '3d' ? (
-                  <div className="w-full h-full flex items-center justify-center">
+                  <div className="w-full h-full flex items-center justify-center min-h-[160px]">
                     <Hero3DCanvas />
                   </div>
                 ) : (
-                  <div className="relative w-56 h-56 rounded-full p-1.5 bg-gradient-to-tr from-cyan-400 via-purple-500 to-amber-400 shadow-[0_0_35px_rgba(147,51,234,0.4)] group-hover:scale-105 transition-transform duration-500">
+                  <div className="relative w-44 h-44 sm:w-56 sm:h-56 rounded-full p-1.5 bg-gradient-to-tr from-cyan-400 via-purple-500 to-amber-400 shadow-[0_0_35px_rgba(147,51,234,0.4)] group-hover:scale-105 transition-transform duration-500">
                     <img
                       src={hero?.profileImageUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80'}
-                      alt="Zakirullah"
+                      alt={hero?.name || "Zakirullah"}
                       className="w-full h-full object-cover rounded-full filter brightness-105 contrast-105"
                     />
                     <div className="absolute inset-0 rounded-full border-2 border-cyan-400/50 animate-ping opacity-20 pointer-events-none" />
@@ -307,12 +334,12 @@ export const HeroSection: React.FC = () => {
               </div>
 
               {/* Bottom Badge: WhatsApp Contact Coordinate */}
-              <div className="relative z-10 pb-5 px-4 flex justify-center">
+              <div className="relative z-10 pb-4 sm:pb-5 px-3 sm:px-4 flex justify-center">
                 <a
                   href={`https://wa.me/92${cleanNumber.startsWith('0') ? cleanNumber.slice(1) : cleanNumber}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`px-4 py-2 rounded-full border text-xs font-semibold flex items-center gap-2 transition-all transform hover:scale-105 ${
+                  className={`w-full sm:w-auto px-4 py-2 rounded-full border text-xs font-semibold flex items-center justify-center gap-2 transition-all transform hover:scale-105 ${
                     isDark
                       ? 'bg-[#0a1128]/90 border-emerald-500/50 text-slate-200 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
                       : 'bg-white border-emerald-300 text-slate-800 shadow-md'

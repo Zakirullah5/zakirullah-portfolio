@@ -17,6 +17,15 @@ export const Project3DCarousel: React.FC<Project3DCarouselProps> = ({ onSelectPr
   const touchStartX = useRef<number | null>(null);
 
   const total = projects.length;
+  const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' && window.innerWidth < 640);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Auto-slide effect
   useEffect(() => {
@@ -44,7 +53,7 @@ export const Project3DCarousel: React.FC<Project3DCarouselProps> = ({ onSelectPr
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current === null) return;
     const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
+    if (Math.abs(diff) > 40) {
       if (diff > 0) handleNext();
       else handlePrev();
     }
@@ -61,28 +70,27 @@ export const Project3DCarousel: React.FC<Project3DCarouselProps> = ({ onSelectPr
 
   return (
     <div
-      className="relative py-8 overflow-hidden select-none"
+      className="relative py-4 sm:py-8 overflow-hidden select-none max-w-full"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       {/* 3D Perspective Stage Container */}
-      <div className="relative h-[430px] sm:h-[480px] max-w-5xl mx-auto flex items-center justify-center perspective-1000">
+      <div className="relative h-[380px] sm:h-[480px] max-w-5xl mx-auto flex items-center justify-center perspective-1000 overflow-hidden sm:overflow-visible">
         {projects.map((project, idx) => {
           const offset = getCardOffset(idx);
           const isCenter = offset === 0;
-          const isLeft = offset === -1;
-          const isRight = offset === 1;
 
-          if (Math.abs(offset) > 2) return null;
+          // On mobile, only show center and immediate 1 neighbor to prevent horizontal overflow
+          if (isMobile ? Math.abs(offset) > 1 : Math.abs(offset) > 2) return null;
 
-          // Compute 3D translation & rotation
-          const translateX = offset * 260; // px
-          const translateZ = isCenter ? 80 : -100 * Math.abs(offset);
-          const rotateY = offset * -18; // deg
-          const opacity = isCenter ? 1 : Math.abs(offset) === 1 ? 0.65 : 0.2;
-          const scale = isCenter ? 1 : 0.85;
+          // Compute 3D translation & rotation adapted for screen width
+          const translateX = isMobile ? offset * 92 : offset * 260; // px
+          const translateZ = isCenter ? (isMobile ? 25 : 80) : (isMobile ? -60 : -100) * Math.abs(offset);
+          const rotateY = isMobile ? offset * -10 : offset * -18; // deg
+          const opacity = isCenter ? 1 : Math.abs(offset) === 1 ? (isMobile ? 0.4 : 0.65) : 0.2;
+          const scale = isCenter ? 1 : isMobile ? 0.78 : 0.85;
 
           const isVideo = !!project.videoUrl || project.category.includes('Video') || project.category.includes('Animated');
 
@@ -97,10 +105,10 @@ export const Project3DCarousel: React.FC<Project3DCarouselProps> = ({ onSelectPr
                 transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
                 opacity,
                 zIndex: isCenter ? 30 : 20 - Math.abs(offset),
-                transition: 'all 0.5s cubic-bezier(0.2, 0.9, 0.3, 1)',
+                transition: 'all 0.45s cubic-bezier(0.2, 0.9, 0.3, 1)',
                 willChange: 'transform, opacity',
               }}
-              className={`absolute w-[290px] sm:w-[380px] rounded-3xl overflow-hidden cursor-pointer shadow-2xl border ${
+              className={`absolute w-[245px] xs:w-[270px] sm:w-[380px] rounded-3xl overflow-hidden cursor-pointer shadow-2xl border ${
                 isCenter
                   ? 'border-blue-500/50 shadow-[0_20px_50px_rgba(59,130,246,0.35)]'
                   : 'border-white/10 hover:border-white/20'
@@ -131,17 +139,17 @@ export const Project3DCarousel: React.FC<Project3DCarouselProps> = ({ onSelectPr
               </div>
 
               {/* Card Meta Content */}
-              <div className="p-5">
-                <h3 className={`text-base font-display font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <div className="p-4 sm:p-5">
+                <h3 className={`text-sm sm:text-base font-display font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   {project.title}
                 </h3>
                 <p className={`text-xs mt-1 line-clamp-2 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                   {project.description}
                 </p>
 
-                <div className="pt-4 mt-3 border-t border-white/10 flex items-center justify-between text-xs">
-                  <span className="text-slate-500 font-medium">{project.client || 'Creative Studio'}</span>
-                  <span className="text-blue-500 font-bold flex items-center gap-1">
+                <div className="pt-3.5 sm:pt-4 mt-3 border-t border-white/10 flex items-center justify-between text-xs">
+                  <span className="text-slate-500 font-medium truncate max-w-[120px]">{project.client || 'Creative Studio'}</span>
+                  <span className="text-blue-500 font-bold flex items-center gap-1 flex-shrink-0">
                     <span>Inspect</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </span>
@@ -153,22 +161,22 @@ export const Project3DCarousel: React.FC<Project3DCarouselProps> = ({ onSelectPr
       </div>
 
       {/* Navigation Controls */}
-      <div className="flex items-center justify-center gap-4 mt-4 relative z-40">
+      <div className="flex items-center justify-center gap-3 sm:gap-4 mt-4 relative z-40 px-4">
         <button
           onClick={handlePrev}
-          className="p-3 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 text-slate-300 hover:text-white transition-all transform active:scale-95 shadow-md"
+          className="p-2.5 sm:p-3 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 text-slate-300 hover:text-white transition-all transform active:scale-95 shadow-md flex-shrink-0 min-h-[40px] min-w-[40px] flex items-center justify-center"
           title="Previous Project"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
 
         {/* Carousel Dots */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 max-w-[190px] xs:max-w-[260px] sm:max-w-none overflow-x-auto scrollbar-none">
           {projects.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentIndex(i)}
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`h-2 rounded-full transition-all duration-300 flex-shrink-0 ${
                 currentIndex === i ? 'w-6 bg-gradient-to-r from-blue-500 to-purple-500' : 'w-2 bg-slate-600'
               }`}
             />

@@ -70,13 +70,13 @@ export const PortfolioGallery: React.FC = () => {
           <Project3DCarousel onSelectProject={(p) => setActiveProject(p)} />
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none mb-8">
+        {/* Filter Pills with edge-to-edge mobile swipe */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none touch-pan-x">
           {filterTabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setSelectedFilter(tab)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+              className={`px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer min-h-[38px] shrink-0 ${
                 selectedFilter === tab
                   ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-[0_0_20px_rgba(59,130,246,0.5)] border border-blue-400/50'
                   : isDark
@@ -90,7 +90,7 @@ export const PortfolioGallery: React.FC = () => {
         </div>
 
         {/* Portfolio Cards Grid with TiltCard */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredProjects.map((project) => {
             const isVideo = !!project.videoUrl || project.category.includes('Video') || project.category.includes('Animated');
 
@@ -171,25 +171,26 @@ export const PortfolioGallery: React.FC = () => {
 
       {/* Project Lightbox & Video Player Modal */}
       {activeProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
           <div
             className="fixed inset-0 bg-black/85 backdrop-blur-xl"
             onClick={() => setActiveProject(null)}
           />
 
-          <div className={`relative w-full max-w-3xl my-auto rounded-3xl overflow-hidden shadow-2xl z-10 border ${
+          <div className={`relative w-full max-w-3xl my-auto rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl z-10 border max-h-[92vh] flex flex-col ${
             isDark ? 'bg-gradient-to-b from-[#101736] to-[#070b1e] border-purple-500/30' : 'bg-white border-slate-200'
           }`}>
             {/* Close Button */}
             <button
               onClick={() => setActiveProject(null)}
-              className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/60 text-white hover:bg-black/90 transition-colors"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 p-2 rounded-full bg-black/70 text-white hover:bg-black transition-colors cursor-pointer"
+              aria-label="Close project modal"
             >
               <X className="w-5 h-5" />
             </button>
 
             {/* Media Area */}
-            <div className="relative aspect-video bg-black flex items-center justify-center">
+            <div className="relative aspect-video max-h-[45vh] sm:max-h-[55vh] bg-black flex items-center justify-center flex-shrink-0">
               {activeProject.videoUrl ? (
                 <video
                   src={activeProject.videoUrl}
@@ -207,19 +208,19 @@ export const PortfolioGallery: React.FC = () => {
             </div>
 
             {/* Details Area */}
-            <div className="p-6">
+            <div className="p-4 sm:p-6 overflow-y-auto">
               <div className="inline-block px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-500 text-xs font-semibold mb-2">
                 {activeProject.category}
               </div>
-              <h3 className={`text-2xl font-display font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <h3 className={`text-xl sm:text-2xl font-display font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {activeProject.title}
               </h3>
-              <p className={`text-sm mt-2 leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+              <p className={`text-xs sm:text-sm mt-2 leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                 {activeProject.description}
               </p>
 
               {activeProject.tags && activeProject.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/10">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-4 pt-4 border-t border-white/10">
                   {activeProject.tags.map((tag, i) => (
                     <span
                       key={i}

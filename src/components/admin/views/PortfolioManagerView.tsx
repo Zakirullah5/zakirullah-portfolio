@@ -111,7 +111,7 @@ export const PortfolioManagerView: React.FC = () => {
 
         <button
           onClick={handleStartCreate}
-          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-xs font-bold flex items-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.35)] transition-all cursor-pointer"
+          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.35)] transition-all cursor-pointer min-h-[42px]"
         >
           <Plus className="w-4 h-4" />
           <span>Add New Project</span>
@@ -234,14 +234,15 @@ export const PortfolioManagerView: React.FC = () => {
             onClick={() => setEditingProject(null)}
           />
 
-          <div className="relative w-full max-w-2xl my-auto bg-gradient-to-b from-[#111736] via-[#0c122e] to-[#070b1e] border border-purple-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl z-10 overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10">
-              <h3 className="text-xl font-display font-bold text-white">
+          <div className="relative w-full max-w-2xl my-auto bg-gradient-to-b from-[#111736] via-[#0c122e] to-[#070b1e] border border-purple-500/40 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-2xl z-10 overflow-hidden max-h-[92vh] sm:max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 flex-shrink-0">
+              <h3 className="text-lg sm:text-xl font-display font-bold text-white">
                 {isCreatingNew ? 'Add New Project' : 'Edit Project Details'}
               </h3>
               <button
                 onClick={() => setEditingProject(null)}
-                className="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white"
+                className="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -255,7 +256,7 @@ export const PortfolioManagerView: React.FC = () => {
                   required
                   value={editingProject.title || ''}
                   onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-blue-400"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-blue-400 min-h-[42px]"
                   placeholder="e.g. 3D Gold ZK Crown Emblem"
                 />
               </div>
@@ -266,7 +267,7 @@ export const PortfolioManagerView: React.FC = () => {
                   <select
                     value={editingProject.category || 'Logo Design'}
                     onChange={(e) => setEditingProject({ ...editingProject, category: e.target.value as any })}
-                    className="w-full px-4 py-2.5 bg-[#0e1533] border border-white/10 rounded-xl text-sm text-white focus:outline-none"
+                    className="w-full px-4 py-2.5 bg-[#0e1533] border border-white/10 rounded-xl text-sm text-white focus:outline-none min-h-[42px]"
                   >
                     {categories.map((c) => (
                       <option key={c} value={c}>{c}</option>
@@ -280,7 +281,7 @@ export const PortfolioManagerView: React.FC = () => {
                     type="text"
                     value={editingProject.client || ''}
                     onChange={(e) => setEditingProject({ ...editingProject, client: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none"
+                    className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none min-h-[42px]"
                     placeholder="e.g. Apex Gaming"
                   />
                 </div>
@@ -300,15 +301,15 @@ export const PortfolioManagerView: React.FC = () => {
               {/* Image Upload / URL */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1 uppercase">Project Image / Thumbnail</label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     value={editingProject.imageUrl || ''}
                     onChange={(e) => setEditingProject({ ...editingProject, imageUrl: e.target.value })}
-                    className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white"
+                    className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white min-h-[40px]"
                     placeholder="Image URL"
                   />
-                  <label className="px-4 py-2 rounded-xl bg-blue-600/30 hover:bg-blue-600/40 text-blue-300 text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                  <label className="px-4 py-2 rounded-xl bg-blue-600/30 hover:bg-blue-600/40 text-blue-300 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer min-h-[40px] flex-shrink-0">
                     <UploadCloud className="w-4 h-4" />
                     <span>Upload Image</span>
                     <input
@@ -324,15 +325,15 @@ export const PortfolioManagerView: React.FC = () => {
               {/* Video Upload / URL */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1 uppercase">Project Video URL (Optional)</label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     value={editingProject.videoUrl || ''}
                     onChange={(e) => setEditingProject({ ...editingProject, videoUrl: e.target.value })}
-                    className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white"
+                    className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white min-h-[40px]"
                     placeholder="https://...mp4 or YouTube / Vimeo"
                   />
-                  <label className="px-4 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/40 text-purple-300 text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                  <label className="px-4 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/40 text-purple-300 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer min-h-[40px] flex-shrink-0">
                     <Film className="w-4 h-4" />
                     <span>Upload Video</span>
                     <input
@@ -346,7 +347,7 @@ export const PortfolioManagerView: React.FC = () => {
               </div>
 
               {/* Publication Status & Featured */}
-              <div className="flex items-center gap-6 pt-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 pt-2">
                 <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
                   <input
                     type="checkbox"

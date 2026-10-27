@@ -14,11 +14,12 @@ import {
   CheckCircle,
   AlertCircle,
   Copy,
-  ExternalLink
+  ExternalLink,
+  FileCheck
 } from 'lucide-react';
 
 export const UploadManagerView: React.FC = () => {
-  const { data, uploadFile, deleteFile } = useData();
+  const { data, uploadFile, deleteFile, updateHero } = useData();
   const media = data?.media || [];
 
   const [isDragging, setIsDragging] = useState(false);
@@ -244,6 +245,27 @@ export const UploadManagerView: React.FC = () => {
               </button>
 
               <div className="flex items-center gap-1.5">
+                {(file.type === 'document' || file.format === 'pdf' || file.name.toLowerCase().endsWith('.pdf')) && (
+                  <button
+                    onClick={() => {
+                      updateHero({
+                        cvPdfUrl: file.url,
+                        cvFileName: file.name,
+                        cvFileSize: (file.sizeBytes / 1024 / 1024).toFixed(2) + ' MB',
+                        cvLastUpdated: new Date().toISOString()
+                      });
+                    }}
+                    className={`px-2 py-1 rounded-lg text-xs flex items-center gap-1 transition-all cursor-pointer ${
+                      data?.hero?.cvPdfUrl === file.url
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
+                        : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                    }`}
+                    title={data?.hero?.cvPdfUrl === file.url ? 'Current Active CV' : 'Set as Active Portfolio CV'}
+                  >
+                    <FileCheck className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-semibold">{data?.hero?.cvPdfUrl === file.url ? 'Active CV' : 'Use as CV'}</span>
+                  </button>
+                )}
                 <a
                   href={file.url}
                   download={file.name}
@@ -254,7 +276,7 @@ export const UploadManagerView: React.FC = () => {
                 </a>
                 <button
                   onClick={() => deleteFile(file.id)}
-                  className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400"
+                  className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 cursor-pointer"
                   title="Delete File"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

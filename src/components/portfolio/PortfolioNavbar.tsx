@@ -186,9 +186,9 @@ export const PortfolioNavbar: React.FC<PortfolioNavbarProps> = ({
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
         <div
-          className={`md:hidden border-b px-5 py-6 space-y-3 backdrop-blur-2xl animate-in slide-in-from-top duration-300 ${
+          className={`md:hidden border-b px-4 sm:px-5 py-5 space-y-3.5 backdrop-blur-2xl animate-in slide-in-from-top duration-300 max-h-[calc(100vh-70px)] overflow-y-auto ${
             isDark
-              ? 'bg-[#090e24]/98 border-white/10 text-white'
+              ? 'bg-[#090e24]/98 border-white/10 text-white shadow-2xl'
               : 'bg-white/98 border-slate-200 text-slate-900 shadow-xl'
           }`}
         >
@@ -198,14 +198,14 @@ export const PortfolioNavbar: React.FC<PortfolioNavbarProps> = ({
                 key={link.label}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-2 text-sm rounded-xl transition-colors ${
+                className={`px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-colors flex items-center justify-center text-center min-h-[42px] ${
                   activeSection === link.id
                     ? isDark
                       ? 'bg-blue-600/30 text-cyan-300 font-semibold border border-blue-500/30'
                       : 'bg-blue-50 text-blue-600 font-semibold border border-blue-200'
                     : isDark
-                    ? 'text-slate-300 hover:text-white hover:bg-white/5'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'text-slate-300 hover:text-white hover:bg-white/5 border border-transparent'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent'
                 }`}
               >
                 {link.label}
@@ -213,12 +213,12 @@ export const PortfolioNavbar: React.FC<PortfolioNavbarProps> = ({
             ))}
           </div>
 
-          <div className="pt-4 border-t border-white/10 flex flex-col gap-2">
+          <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
             <a
               href={`https://wa.me/92${cleanNumber.startsWith('0') ? cleanNumber.slice(1) : cleanNumber}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-center text-sm font-semibold text-white shadow-lg flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-center text-xs sm:text-sm font-semibold text-white shadow-lg flex items-center justify-center gap-2 min-h-[44px]"
             >
               <span>Hire Me on WhatsApp</span>
               <ArrowUpRight className="w-4 h-4" />
@@ -230,7 +230,7 @@ export const PortfolioNavbar: React.FC<PortfolioNavbarProps> = ({
                   setMobileMenuOpen(false);
                   if (onNavigateToAdmin) onNavigateToAdmin();
                 }}
-                className="w-full py-2.5 rounded-xl bg-purple-600/20 border border-purple-500/40 text-purple-300 text-sm font-semibold flex items-center justify-center gap-2"
+                className="w-full py-2.5 rounded-xl bg-purple-600/20 border border-purple-500/40 text-purple-300 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 min-h-[44px]"
               >
                 <ShieldCheck className="w-4 h-4 text-amber-400" />
                 <span>Go to Admin Panel</span>
@@ -242,7 +242,7 @@ export const PortfolioNavbar: React.FC<PortfolioNavbarProps> = ({
                   if (onOpenAdminModal) onOpenAdminModal();
                   else openLoginModal();
                 }}
-                className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-2"
+                className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-2 min-h-[44px]"
               >
                 <ShieldCheck className="w-4 h-4 text-blue-400" />
                 <span>Admin Login</span>

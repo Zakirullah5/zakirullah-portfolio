@@ -555,6 +555,57 @@ export const INITIAL_DATABASE: SiteDatabase = {
       user: 'Zakirullah'
     }
   ],
+  inquiries: [
+    {
+      id: 'inq_1',
+      name: 'Ahmed Khan',
+      email: 'ahmed.k@example.com',
+      phone: '03001234567',
+      service: '3D Logo Animation',
+      message: 'Hello Zakirullah, I need a high-end 3D metallic gold animated logo for our brand launch next week.',
+      createdAt: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
+      read: false
+    },
+    {
+      id: 'inq_2',
+      name: 'Sarah Williams',
+      email: 'sarah.w@creativeagency.com',
+      phone: '+44 7700 900077',
+      service: 'Video Editing',
+      message: 'Looking for a skilled video editor for our client social media reels and ad commercials.',
+      createdAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+      read: false
+    }
+  ],
+  notifications: [
+    {
+      id: 'notif_1',
+      title: 'New Client Inquiry: Ahmed Khan',
+      message: 'Requested 3D Logo Animation service (Contact: ahmed.k@example.com)',
+      type: 'inquiry',
+      timestamp: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
+      read: false,
+      link: 'contact'
+    },
+    {
+      id: 'notif_2',
+      title: 'New Client Inquiry: Sarah Williams',
+      message: 'Requested Video Editing for social media reels & ad campaigns',
+      type: 'inquiry',
+      timestamp: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+      read: false,
+      link: 'contact'
+    },
+    {
+      id: 'notif_3',
+      title: 'CV / Resume Feature Active',
+      message: 'Portfolio CV download button is configured and ready for uploads',
+      type: 'cv',
+      timestamp: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
+      read: true,
+      link: 'cv'
+    }
+  ],
   lastPublishedAt: new Date().toISOString(),
   isDraft: false
 };

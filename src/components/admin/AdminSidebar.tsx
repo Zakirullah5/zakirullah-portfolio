@@ -26,13 +26,15 @@ import {
   LogOut,
   X,
   Sun,
-  Moon
+  Moon,
+  FileDown
 } from 'lucide-react';
 
 export type AdminViewType =
   | 'dashboard'
   | 'overview'
   | 'hero'
+  | 'cv'
   | 'about'
   | 'logo'
   | 'portfolio'
@@ -73,6 +75,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'overview', label: 'Website Overview', icon: Globe },
     { id: 'hero', label: 'Hero Section', icon: Sliders },
+    { id: 'cv', label: 'Upload CV / Resume', icon: FileDown },
     { id: 'about', label: 'About Me', icon: User },
     { id: 'logo', label: 'Logo Manager', icon: Shield },
     { id: 'portfolio', label: 'Portfolio Manager', icon: Briefcase },

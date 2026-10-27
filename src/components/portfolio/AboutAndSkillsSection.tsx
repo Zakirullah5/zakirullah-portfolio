@@ -57,7 +57,7 @@ export const AboutAndSkillsSection: React.FC = () => {
           {/* Left Card: About Me */}
           <TiltCard
             maxTilt={4}
-            className={`lg:col-span-5 flex flex-col justify-between p-6 sm:p-8 rounded-[32px] border shadow-2xl backdrop-blur-xl relative overflow-hidden ${
+            className={`lg:col-span-5 flex flex-col justify-between p-5 sm:p-8 rounded-[28px] sm:rounded-[32px] border shadow-2xl backdrop-blur-xl relative overflow-hidden ${
               isDark
                 ? 'bg-gradient-to-b from-[#0e1633]/90 via-[#0a0f26]/95 to-[#060919] border-blue-500/25 shadow-[0_0_35px_rgba(59,130,246,0.15)]'
                 : 'bg-white/95 border-slate-200 shadow-xl'
@@ -89,70 +89,70 @@ export const AboutAndSkillsSection: React.FC = () => {
               )}
 
               {/* 4 Details Grid */}
-              <div className="grid grid-cols-2 gap-3 my-6">
-                <div className={`p-3 rounded-2xl border flex items-center gap-2.5 ${
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 sm:gap-3 my-6">
+                <div className={`p-3 rounded-2xl border flex items-center gap-2.5 min-w-0 ${
                   isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center flex-shrink-0">
                     <User className="w-4 h-4" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Name</div>
-                    <div className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{about?.name || 'Zakirullah'}</div>
+                    <div className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{about?.name || 'Zakirullah'}</div>
                   </div>
                 </div>
 
-                <div className={`p-3 rounded-2xl border flex items-center gap-2.5 ${
+                <div className={`p-3 rounded-2xl border flex items-center gap-2.5 min-w-0 ${
                   isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center flex-shrink-0">
                     <MapPin className="w-4 h-4" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Location</div>
                     <div className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{about?.location || 'Tangi, Charsadda'}</div>
                   </div>
                 </div>
 
-                <div className={`p-3 rounded-2xl border flex items-center gap-2.5 ${
+                <div className={`p-3 rounded-2xl border flex items-center gap-2.5 min-w-0 ${
                   isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0">
                     <Clock className="w-4 h-4" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Experience</div>
-                    <div className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{about?.experience || '3+ Years'}</div>
+                    <div className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{about?.experience || '3+ Years'}</div>
                   </div>
                 </div>
 
-                <div className={`p-3 rounded-2xl border flex items-center gap-2.5 ${
+                <div className={`p-3 rounded-2xl border flex items-center gap-2.5 min-w-0 ${
                   isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center flex-shrink-0">
                     <CheckCircle2 className="w-4 h-4" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Freelance</div>
-                    <div className="text-xs font-bold text-emerald-500">{about?.availability || 'Available'}</div>
+                    <div className="text-xs font-bold text-emerald-500 truncate">{about?.availability || 'Available'}</div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Bottom Signature & Portrait Frame */}
-            <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+            <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-3">
               <div>
                 <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
                   Creative Signature
                 </div>
-                <div className="font-cursive text-3xl sm:text-4xl text-amber-500 tracking-wider mt-1 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]">
+                <div className="font-cursive text-2xl sm:text-4xl text-amber-500 tracking-wider mt-1 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]">
                   Zakirullah
                 </div>
               </div>
 
               {/* Glowing Profile Portrait Mini-Frame */}
-              <div className="relative w-16 h-16 rounded-2xl p-0.5 bg-gradient-to-tr from-cyan-400 to-purple-600 shadow-md">
+              <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl p-0.5 bg-gradient-to-tr from-cyan-400 to-purple-600 shadow-md flex-shrink-0">
                 <img
                   src={about?.profileImageUrl || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80'}
                   alt="Zakirullah"
@@ -169,7 +169,7 @@ export const AboutAndSkillsSection: React.FC = () => {
           {/* Right Card: My Skills (56+ Professional Skills) */}
           <TiltCard
             maxTilt={4}
-            className={`lg:col-span-7 flex flex-col justify-between p-6 sm:p-8 rounded-[32px] border shadow-2xl backdrop-blur-xl relative overflow-hidden ${
+            className={`lg:col-span-7 flex flex-col justify-between p-5 sm:p-8 rounded-[28px] sm:rounded-[32px] border shadow-2xl backdrop-blur-xl relative overflow-hidden ${
               isDark
                 ? 'bg-gradient-to-b from-[#0e1633]/90 via-[#0a0f26]/95 to-[#060919] border-purple-500/25 shadow-[0_0_35px_rgba(168,85,247,0.15)]'
                 : 'bg-white/95 border-slate-200 shadow-xl'
@@ -177,7 +177,7 @@ export const AboutAndSkillsSection: React.FC = () => {
           >
             <div>
               {/* Header with 56+ Badge */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                 <div>
                   <h2 className={`text-2xl sm:text-3xl font-display font-bold tracking-tight ${
                     isDark ? 'text-white' : 'text-slate-900'
@@ -189,27 +189,27 @@ export const AboutAndSkillsSection: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-400/40 text-cyan-400 text-xs font-bold tracking-wide flex items-center gap-1.5 shadow-sm">
+                <div className="self-start sm:self-auto px-3.5 py-1.5 rounded-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-400/40 text-cyan-400 text-xs font-bold tracking-wide flex items-center gap-1.5 shadow-sm">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                   <span>56+ Professional Skills</span>
                 </div>
               </div>
 
               {/* 3D Skills Grid (11 Featured + 1 More Skills Trigger) */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
                 {featuredSkills.map((sk) => (
                   <TiltCard
                     key={sk.id}
                     maxTilt={12}
                     scale={1.04}
                     onClick={() => setIsFullSkillsModalOpen(true)}
-                    className={`p-3.5 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center cursor-pointer ${
+                    className={`p-3 sm:p-3.5 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center cursor-pointer ${
                       isDark
                         ? 'bg-white/[0.03] hover:bg-white/[0.07] border-white/5 hover:border-blue-400/40'
                         : 'bg-slate-50 hover:bg-slate-100 border-slate-200 hover:border-blue-300 shadow-sm'
                     }`}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-2">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-2">
                       {getSkillIcon(sk.icon || sk.title)}
                     </div>
                     <span className={`text-xs font-semibold line-clamp-1 ${
@@ -228,9 +228,9 @@ export const AboutAndSkillsSection: React.FC = () => {
                   maxTilt={12}
                   scale={1.04}
                   onClick={() => setIsFullSkillsModalOpen(true)}
-                  className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 hover:from-blue-600/30 hover:to-purple-600/30 border border-purple-400/40 hover:border-purple-300 text-center flex flex-col items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
+                  className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 hover:from-blue-600/30 hover:to-purple-600/30 border border-purple-400/40 hover:border-purple-300 text-center flex flex-col items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center mb-2 group-hover/btn:rotate-90 transition-transform">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center mb-2 group-hover/btn:rotate-90 transition-transform">
                     <Plus className="w-5 h-5 text-purple-400" />
                   </div>
                   <span className="text-xs font-bold text-white group-hover/btn:text-amber-300 transition-colors">
@@ -244,11 +244,11 @@ export const AboutAndSkillsSection: React.FC = () => {
             </div>
 
             {/* Bottom Summary Bar */}
-            <div className="pt-4 mt-6 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
+            <div className="pt-4 mt-6 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs text-slate-400">
               <span>Includes 2D/3D Logo Animation, VFX, Reels, and AI Prompts</span>
               <button
                 onClick={() => setIsFullSkillsModalOpen(true)}
-                className="text-amber-500 hover:text-amber-400 font-semibold flex items-center gap-1 transition-colors"
+                className="text-amber-500 hover:text-amber-400 font-semibold flex items-center gap-1 transition-colors min-h-[36px]"
               >
                 <span>Full Skill Breakdown</span>
                 <ArrowRight className="w-3.5 h-3.5" />
