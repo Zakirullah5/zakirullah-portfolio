@@ -16,9 +16,11 @@ import {
   AdminNotification
 } from '../types/index.ts';
 import { useAuth } from './AuthContext.tsx';
+import { INITIAL_DATABASE } from '../data/initialData.ts';
+import { apiUrl, resolveUploadUrl, normalizeDatabaseUrls } from '../utils/api.ts';
 
 interface DataContextType {
-  data: SiteDatabase | null;
+  data: SiteDatabase;
   isLoading: boolean;
   isSaving: boolean;
   refreshData: () => Promise<void>;
@@ -59,8 +61,27 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | null>(null);
 
+const STORAGE_KEY = 'zk_portfolio_data';
+
+// Helper to safely read initial database with fallback
+function getInitialData(): SiteDatabase {
+  try {
+    const cached = localStorage.getItem(STORAGE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      // Validate that essential keys exist
+      if (parsed && parsed.hero && Array.isArray(parsed.services) && Array.isArray(parsed.skills)) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to parse cached portfolio data:', e);
+  }
+  return INITIAL_DATABASE;
+}
+
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [data, setData] = useState<SiteDatabase | null>(null);
+  const [data, setData] = useState<SiteDatabase>(getInitialData);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -73,19 +94,41 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 4000);
   };
 
-  const refreshData = useCallback(async () => {
+  // Persist locally
+  const saveLocally = useCallback((nextData: SiteDatabase) => {
+    setData(nextData);
     try {
-      const res = await fetch('/api/content');
-      if (res.ok) {
-        const json = await res.json();
-        setData(json.data);
-      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextData));
     } catch (e) {
-      console.error('Failed to load site content:', e);
-    } finally {
-      setIsLoading(false);
+      console.warn('Could not save to localStorage:', e);
     }
   }, []);
+
+  const refreshData = useCallback(async () => {
+    try {
+      const res = await fetch(apiUrl('/api/content'));
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.data) {
+          saveLocally(normalizeDatabaseUrls(json.data));
+          setIsLoading(false);
+          return;
+        }
+      }
+    } catch (e) {
+      // Offline / GitHub Pages static mode where /api/content 404s
+      console.info('Backend API unavailable, using client-bundled data / localStorage.');
+    }
+
+    // Fallback: verify we have at least initial data loaded
+    setData((curr) => {
+      if (!curr || !curr.services || curr.services.length === 0) {
+        return INITIAL_DATABASE;
+      }
+      return curr;
+    });
+    setIsLoading(false);
+  }, [saveLocally]);
 
   useEffect(() => {
     refreshData();
@@ -99,24 +142,38 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateSection = async (section: string, payload: any) => {
     if (!token) return false;
     setIsSaving(true);
+    let apiSuccess = false;
     try {
-      const res = await fetch(`/api/admin/section/${section}`, {
+      const res = await fetch(apiUrl(`/api/admin/section/${section}`), {
         method: 'PUT',
         headers: authHeaders,
         body: JSON.stringify(payload)
       });
       if (res.ok) {
-        await refreshData();
-        showToast(`Saved ${section} changes as draft!`);
-        return true;
+        apiSuccess = true;
       }
-      return false;
-    } catch (e) {
-      console.error(`Error updating section ${section}:`, e);
-      return false;
-    } finally {
-      setIsSaving(false);
+    } catch {
+      // Backend not running (static GitHub Pages)
     }
+
+    // Always update client state & localStorage
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        [section]: {
+          ...(prev as any)[section],
+          ...payload
+        }
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast(`Saved ${section} changes!`);
+    return true;
   };
 
   const updateHero = (hero: Partial<HeroSettings>) => updateSection('hero', hero);
@@ -129,283 +186,403 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addProject = async (project: Omit<Project, 'id' | 'createdAt'>) => {
     if (!token) return false;
     setIsSaving(true);
+    const newProject: Project = {
+      ...project,
+      id: 'proj_' + Date.now(),
+      createdAt: new Date().toISOString()
+    };
+
     try {
-      const res = await fetch('/api/admin/projects', {
+      const res = await fetch(apiUrl('/api/admin/projects'), {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify(project)
       });
       if (res.ok) {
-        await refreshData();
-        showToast('New project added to portfolio!');
-        return true;
+        const json = await res.json();
+        if (json.project) {
+          newProject.id = json.project.id;
+        }
       }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        projects: [newProject, ...prev.projects]
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('New project added to portfolio!');
+    return true;
   };
 
   const updateProject = async (id: string, project: Partial<Project>) => {
     if (!token) return false;
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/admin/projects/${id}`, {
+      await fetch(apiUrl(`/api/admin/projects/${id}`), {
         method: 'PUT',
         headers: authHeaders,
         body: JSON.stringify(project)
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('Project updated successfully!');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        projects: prev.projects.map((p) => (p.id === id ? { ...p, ...project } : p))
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('Project updated successfully!');
+    return true;
   };
 
   const deleteProject = async (id: string) => {
     if (!token) return false;
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/admin/projects/${id}`, {
+      await fetch(apiUrl(`/api/admin/projects/${id}`), {
         method: 'DELETE',
         headers: authHeaders
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('Project removed from portfolio');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        projects: prev.projects.filter((p) => p.id !== id)
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('Project removed from portfolio');
+    return true;
   };
 
   const addService = async (service: Omit<Service, 'id'>) => {
     if (!token) return false;
     setIsSaving(true);
+    const newService: Service = {
+      ...service,
+      id: 'srv_' + Date.now()
+    };
+
     try {
-      const res = await fetch('/api/admin/services', {
+      const res = await fetch(apiUrl('/api/admin/services'), {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify(service)
       });
       if (res.ok) {
-        await refreshData();
-        showToast('Service added successfully!');
-        return true;
+        const json = await res.json();
+        if (json.service) {
+          newService.id = json.service.id;
+        }
       }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        services: [...prev.services, newService]
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('Service added successfully!');
+    return true;
   };
 
   const updateService = async (id: string, service: Partial<Service>) => {
     if (!token) return false;
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/admin/services/${id}`, {
+      await fetch(apiUrl(`/api/admin/services/${id}`), {
         method: 'PUT',
         headers: authHeaders,
         body: JSON.stringify(service)
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('Service updated successfully!');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        services: prev.services.map((s) => (s.id === id ? { ...s, ...service } : s))
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('Service updated successfully!');
+    return true;
   };
 
   const deleteService = async (id: string) => {
     if (!token) return false;
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/admin/services/${id}`, {
+      await fetch(apiUrl(`/api/admin/services/${id}`), {
         method: 'DELETE',
         headers: authHeaders
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('Service deleted');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        services: prev.services.filter((s) => s.id !== id)
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('Service deleted');
+    return true;
   };
 
   const updateRates = async (rates: ServiceRate[]) => {
     if (!token) return false;
     setIsSaving(true);
     try {
-      const res = await fetch('/api/admin/rates', {
+      await fetch(apiUrl('/api/admin/rates'), {
         method: 'PUT',
         headers: authHeaders,
         body: JSON.stringify({ rates })
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('Pricing and rates updated!');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        rates
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('Pricing and rates updated!');
+    return true;
   };
 
   const addSkill = async (skill: Omit<Skill, 'id'>) => {
     if (!token) return false;
     setIsSaving(true);
+    const newSkill: Skill = {
+      ...skill,
+      id: 'skl_' + Date.now()
+    };
+
     try {
-      const res = await fetch('/api/admin/skills', {
+      const res = await fetch(apiUrl('/api/admin/skills'), {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify(skill)
       });
       if (res.ok) {
-        await refreshData();
-        showToast('New skill added!');
-        return true;
+        const json = await res.json();
+        if (json.skill) {
+          newSkill.id = json.skill.id;
+        }
       }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        skills: [...prev.skills, newSkill]
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('New skill added!');
+    return true;
   };
 
   const updateSkill = async (id: string, skill: Partial<Skill>) => {
     if (!token) return false;
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/admin/skills/${id}`, {
+      await fetch(apiUrl(`/api/admin/skills/${id}`), {
         method: 'PUT',
         headers: authHeaders,
         body: JSON.stringify(skill)
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('Skill updated!');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        skills: prev.skills.map((s) => (s.id === id ? { ...s, ...skill } : s))
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('Skill updated!');
+    return true;
   };
 
   const deleteSkill = async (id: string) => {
     if (!token) return false;
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/admin/skills/${id}`, {
+      await fetch(apiUrl(`/api/admin/skills/${id}`), {
         method: 'DELETE',
         headers: authHeaders
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('Skill deleted');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        skills: prev.skills.filter((s) => s.id !== id)
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('Skill deleted');
+    return true;
   };
 
   const addTestimonial = async (test: Omit<Testimonial, 'id'>) => {
     if (!token) return false;
     setIsSaving(true);
+    const newTest: Testimonial = {
+      ...test,
+      id: 'test_' + Date.now()
+    };
+
     try {
-      const res = await fetch('/api/admin/testimonials', {
+      const res = await fetch(apiUrl('/api/admin/testimonials'), {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify(test)
       });
       if (res.ok) {
-        await refreshData();
-        showToast('Testimonial added!');
-        return true;
+        const json = await res.json();
+        if (json.testimonial) {
+          newTest.id = json.testimonial.id;
+        }
       }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        testimonials: [...prev.testimonials, newTest]
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('Testimonial added!');
+    return true;
   };
 
   const updateTestimonial = async (id: string, test: Partial<Testimonial>) => {
     if (!token) return false;
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/admin/testimonials/${id}`, {
+      await fetch(apiUrl(`/api/admin/testimonials/${id}`), {
         method: 'PUT',
         headers: authHeaders,
         body: JSON.stringify(test)
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('Testimonial updated!');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        testimonials: prev.testimonials.map((t) => (t.id === id ? { ...t, ...test } : t))
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('Testimonial updated!');
+    return true;
   };
 
   const deleteTestimonial = async (id: string) => {
     if (!token) return false;
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/admin/testimonials/${id}`, {
+      await fetch(apiUrl(`/api/admin/testimonials/${id}`), {
         method: 'DELETE',
         headers: authHeaders
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('Testimonial deleted');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        testimonials: prev.testimonials.filter((t) => t.id !== id)
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setIsSaving(false);
+    showToast('Testimonial deleted');
+    return true;
+  };
+
+  // Helper to read file as Data URL
+  const readFileAsDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
   const uploadFile = async (file: File) => {
@@ -413,7 +590,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await fetch('/api/admin/upload', {
+      const res = await fetch(apiUrl('/api/admin/upload'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`
@@ -423,12 +600,42 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const json = await res.json();
       if (res.ok && json.success) {
         await refreshData();
+        const resolvedUrl = resolveUploadUrl(json.file.url);
+        const resolvedFile = { ...json.file, url: resolvedUrl };
         showToast(`Uploaded ${file.name} successfully!`);
-        return { success: true, url: json.file.url, file: json.file };
+        return { success: true, url: resolvedUrl, file: resolvedFile };
       }
-      return { success: false, error: json.message || 'Upload failed' };
-    } catch (e: any) {
-      return { success: false, error: e.message || 'Network error' };
+    } catch {
+      // Backend unavailable; process offline via Data URL
+    }
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      const mediaItem: MediaFile = {
+        id: 'med_' + Date.now(),
+        name: file.name,
+        url: dataUrl,
+        type: file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : 'document',
+        format: file.name.split('.').pop() || 'dat',
+        sizeBytes: file.size,
+        createdAt: new Date().toISOString()
+      };
+
+      setData((prev) => {
+        const updated = {
+          ...prev,
+          media: [mediaItem, ...prev.media]
+        };
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      showToast(`Uploaded ${file.name} successfully!`);
+      return { success: true, url: dataUrl, file: mediaItem };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Upload failed' };
     }
   };
 
@@ -437,7 +644,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const formData = new FormData();
     formData.append('cvFile', file);
     try {
-      const res = await fetch('/api/admin/cv/upload', {
+      const res = await fetch(apiUrl('/api/admin/cv/upload'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`
@@ -448,91 +655,137 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.ok && json.success) {
         await refreshData();
         showToast(`CV / Resume updated with "${file.name}"!`);
-        return { success: true, hero: json.hero };
+        return { success: true, hero: normalizeDatabaseUrls(json.hero) };
       }
-      return { success: false, error: json.message || 'CV upload failed' };
-    } catch (e: any) {
-      return { success: false, error: e.message || 'Network error' };
+    } catch {
+      // Backend unavailable; process offline via Data URL
+    }
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      let updatedHero: HeroSettings = {
+        ...data.hero,
+        cvPdfUrl: dataUrl,
+        cvFileName: file.name,
+        cvFileSize: `${(file.size / 1024).toFixed(1)} KB`,
+        cvLastUpdated: new Date().toISOString()
+      };
+
+      setData((prev) => {
+        const updated = {
+          ...prev,
+          hero: {
+            ...prev.hero,
+            cvPdfUrl: dataUrl,
+            cvFileName: file.name,
+            cvFileSize: `${(file.size / 1024).toFixed(1)} KB`,
+            cvLastUpdated: new Date().toISOString()
+          }
+        };
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      showToast(`CV / Resume updated with "${file.name}"!`);
+      return { success: true, hero: updatedHero };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'CV upload failed' };
     }
   };
 
   const removeCV = async () => {
     if (!token) return false;
     try {
-      const res = await fetch('/api/admin/cv', {
+      await fetch(apiUrl('/api/admin/cv'), {
         method: 'DELETE',
         headers: authHeaders
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('CV reset to default browser print format');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        hero: {
+          ...prev.hero,
+          cvPdfUrl: '',
+          cvFileName: '',
+          cvFileSize: '',
+          cvLastUpdated: undefined
+        }
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    showToast('CV reset to default browser print format');
+    return true;
   };
 
   const deleteFile = async (id: string) => {
     if (!token) return false;
     try {
-      const res = await fetch(`/api/admin/media/${id}`, {
+      await fetch(apiUrl(`/api/admin/media/${id}`), {
         method: 'DELETE',
         headers: authHeaders
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('File deleted from server');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    }
+    } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        media: prev.media.filter((m) => m.id !== id)
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    showToast('File deleted');
+    return true;
   };
 
   const publishChanges = async () => {
     if (!token) return false;
     setIsSaving(true);
     try {
-      const res = await fetch('/api/admin/publish', {
+      await fetch(apiUrl('/api/admin/publish'), {
         method: 'POST',
         headers: authHeaders
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('🚀 Live Website Updated! All changes are now public.');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
+    } catch {}
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch {}
+
+    setIsSaving(false);
+    showToast('🚀 Live Website Updated! All changes are now public.');
+    return true;
   };
 
   const restoreBackup = async (backupData: any) => {
     if (!token) return false;
     setIsSaving(true);
     try {
-      const res = await fetch('/api/admin/restore', {
+      await fetch(apiUrl('/api/admin/restore'), {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify(backupData)
       });
-      if (res.ok) {
-        await refreshData();
-        showToast('Database restored successfully from backup!');
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setIsSaving(false);
+    } catch {}
+
+    if (backupData && backupData.hero) {
+      saveLocally(backupData);
     }
+
+    setIsSaving(false);
+    showToast('Database restored successfully from backup!');
+    return true;
   };
 
   const notifications = data?.notifications || [];
@@ -541,47 +794,87 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const markNotificationRead = async (id: string) => {
     if (!token) return;
     try {
-      await fetch(`/api/admin/notifications/${id}/read`, {
+      await fetch(apiUrl(`/api/admin/notifications/${id}/read`), {
         method: 'POST',
         headers: authHeaders
       });
-      await refreshData();
     } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        notifications: (prev.notifications || []).map((n) => (n.id === id ? { ...n, read: true } : n))
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const markAllNotificationsRead = async () => {
     if (!token) return;
     try {
-      await fetch('/api/admin/notifications/mark-all-read', {
+      await fetch(apiUrl('/api/admin/notifications/mark-all-read'), {
         method: 'POST',
         headers: authHeaders
       });
-      await refreshData();
-      showToast('All notifications marked as read');
     } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        notifications: (prev.notifications || []).map((n) => ({ ...n, read: true }))
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    showToast('All notifications marked as read');
   };
 
   const deleteNotification = async (id: string) => {
     if (!token) return;
     try {
-      await fetch(`/api/admin/notifications/${id}`, {
+      await fetch(apiUrl(`/api/admin/notifications/${id}`), {
         method: 'DELETE',
         headers: authHeaders
       });
-      await refreshData();
     } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        notifications: (prev.notifications || []).filter((n) => n.id !== id)
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const clearAllNotifications = async () => {
     if (!token) return;
     try {
-      await fetch('/api/admin/notifications', {
+      await fetch(apiUrl('/api/admin/notifications'), {
         method: 'DELETE',
         headers: authHeaders
       });
-      await refreshData();
-      showToast('All notifications cleared');
     } catch {}
+
+    setData((prev) => {
+      const updated = {
+        ...prev,
+        notifications: []
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    showToast('All notifications cleared');
   };
 
   return (

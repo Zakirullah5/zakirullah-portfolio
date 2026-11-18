@@ -27,12 +27,30 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-// Security Middleware: Set HTTP Security Headers
-app.use((_req: Request, res: Response, next: NextFunction) => {
+// Security & CORS Middleware: Allow external frontends (e.g. GitHub Pages) to connect when configured
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const allowedOrigin = process.env.CORS_ORIGIN || '*';
+  const reqOrigin = req.headers.origin;
+  if (allowedOrigin === '*') {
+    res.setHeader('Access-Control-Allow-Origin', reqOrigin || '*');
+  } else {
+    const allowedList = allowedOrigin.split(',').map((o) => o.trim());
+    if (reqOrigin && allowedList.includes(reqOrigin)) {
+      res.setHeader('Access-Control-Allow-Origin', reqOrigin);
+    }
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
+  }
   next();
 });
 

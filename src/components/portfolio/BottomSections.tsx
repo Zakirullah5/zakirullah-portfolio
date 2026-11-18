@@ -3,6 +3,7 @@ import { useData } from '../../context/DataContext.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useTheme } from '../../context/ThemeContext.tsx';
 import { TiltCard } from '../common/TiltCard.tsx';
+import { apiUrl } from '../../utils/api.ts';
 import {
   Sparkles,
   Clock,
@@ -46,7 +47,7 @@ export const BottomSections: React.FC<BottomSectionsProps> = ({
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (contactName) {
-      fetch('/api/contact/inquiry', {
+      fetch(apiUrl('/api/contact/inquiry'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: contactName, email: contactEmail, message: contactMsg })
